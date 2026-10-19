@@ -32,7 +32,7 @@ export function exportarCSV(filas, columnas, nombreBase) {
     columnas.map((c) => celdaCSV(c.titulo)).join(";"),
     ...filas.map((fila) => columnas.map((c) => celdaCSV(c.valor(fila))).join(";")),
   ];
-  descargar(`﻿${lineas.join("\r\n")}`, nombreConFecha(nombreBase, "csv"), "text/csv;charset=utf-8");
+  descargar(`\uFEFF${lineas.join("\r\n")}`, nombreConFecha(nombreBase, "csv"), "text/csv;charset=utf-8");
 }
 
 function escaparHTML(valor) {

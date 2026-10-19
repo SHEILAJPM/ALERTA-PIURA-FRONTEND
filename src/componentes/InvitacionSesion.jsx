@@ -25,10 +25,8 @@ function InvitacionSesion() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (usuario || descartadaRecientemente()) {
-      setVisible(false);
-      return undefined;
-    }
+    // Con sesión no hace falta apagarlo acá: el render ya lo oculta si hay usuario.
+    if (usuario || descartadaRecientemente()) return undefined;
     const id = setTimeout(() => setVisible(true), DEMORA_MS);
     return () => clearTimeout(id);
   }, [usuario]);

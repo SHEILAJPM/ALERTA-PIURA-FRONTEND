@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import RiverStatus from "../componentes/RiverStatus";
 import KpiCard, { KpiCardSkeleton } from "../componentes/KpiCard";
 import AlertCard from "../componentes/AlertCard";
@@ -36,17 +36,16 @@ function calcularTendencia(prediccion) {
 
 function Home() {
   const { data: sensores, loading: cargandoSensores } = useSensores();
-  const [sensorCodigo, setSensorCodigo] = useState(
+  const [sensorElegido, setSensorCodigo] = useState(
     () => localStorage.getItem(CLAVE_SENSOR_GUARDADO) || SENSOR_POR_DEFECTO
   );
 
   // Si el sensor guardado ya no existe (borrado desde el panel admin), cae al
   // primero disponible en vez de dejar el dashboard pegado a un código muerto.
-  useEffect(() => {
-    if (sensores && sensores.length > 0 && !sensores.some((s) => s.codigo === sensorCodigo)) {
-      setSensorCodigo(sensores[0].codigo);
-    }
-  }, [sensores, sensorCodigo]);
+  const sensorCodigo =
+    sensores?.length && !sensores.some((s) => s.codigo === sensorElegido)
+      ? sensores[0].codigo
+      : sensorElegido;
 
   function elegirSensor(codigo) {
     setSensorCodigo(codigo);

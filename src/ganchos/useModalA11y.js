@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 
 const SELECTOR_ENFOCABLES =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -14,7 +14,9 @@ const SELECTOR_ENFOCABLES =
 export function useModalA11y(onCerrar) {
   const contenedorRef = useRef(null);
   const onCerrarRef = useRef(onCerrar);
-  onCerrarRef.current = onCerrar;
+  useLayoutEffect(() => {
+    onCerrarRef.current = onCerrar;
+  });
 
   useEffect(() => {
     const previo = document.activeElement;
