@@ -140,6 +140,16 @@ html {
   animation: pulse-asistente 2.4s ease-in-out infinite;
 }
 
+/* Barra de progreso de cada historia (ver StoriesBar.jsx). */
+@keyframes progreso-historia {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
 /* Ver RiesgoMap.jsx: solo se aplica sin clave de CARTO en tema oscuro, para
    que el respaldo de OpenStreetMap no se vea como un cuadrado blanco
    brillante en medio de una página oscura. */
