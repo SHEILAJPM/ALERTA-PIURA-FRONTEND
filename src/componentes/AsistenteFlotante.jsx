@@ -31,12 +31,23 @@ function Mensaje({ intercambio, onFeedback }) {
             {intercambio.respuesta}
           </p>
           {intercambio.feedback == null ? (
-            <div className="flex items-center gap-2 mt-1 text-xs" style={{ color: "var(--color-text-muted)" }}>
+            <div
+              className="flex items-center gap-2 mt-1 text-xs"
+              style={{ color: "var(--color-text-muted)" }}
+            >
               ¿Te sirvió?
-              <button type="button" onClick={() => onFeedback(true)} className="font-semibold hover:underline">
+              <button
+                type="button"
+                onClick={() => onFeedback(true)}
+                className="font-semibold hover:underline"
+              >
                 Sí
               </button>
-              <button type="button" onClick={() => onFeedback(false)} className="font-semibold hover:underline">
+              <button
+                type="button"
+                onClick={() => onFeedback(false)}
+                className="font-semibold hover:underline"
+              >
                 No
               </button>
             </div>

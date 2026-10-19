@@ -118,7 +118,11 @@ function Auditoria() {
               </thead>
               <tbody>
                 {visibles.map((a) => (
-                  <tr key={a.id} className="border-t align-top" style={{ borderColor: "var(--color-border)" }}>
+                  <tr
+                    key={a.id}
+                    className="border-t align-top"
+                    style={{ borderColor: "var(--color-border)" }}
+                  >
                     <td
                       className="pl-5 pr-4 py-3 font-mono-data text-xs whitespace-nowrap"
                       style={{ color: "var(--color-text-muted)" }}
@@ -127,7 +131,10 @@ function Auditoria() {
                     </td>
                     <td className="pr-4 py-3 font-semibold">{a.usuario_nombre ?? "Sistema"}</td>
                     <td className="pr-4 py-3">{textoAccion(a.accion)}</td>
-                    <td className="pr-5 py-3 text-xs wrap-break-word" style={{ color: "var(--color-text-muted)" }}>
+                    <td
+                      className="pr-5 py-3 text-xs wrap-break-word"
+                      style={{ color: "var(--color-text-muted)" }}
+                    >
                       {a.detalle ?? "—"}
                     </td>
                   </tr>

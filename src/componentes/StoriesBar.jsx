@@ -106,7 +106,10 @@ function StoriesBar() {
 
   return (
     <>
-      <div className="flex gap-4 overflow-x-auto pb-3 mb-4 -mx-1 px-1" aria-label="Fotos de las últimas 24 horas">
+      <div
+        className="flex gap-4 overflow-x-auto pb-3 mb-4 -mx-1 px-1"
+        aria-label="Fotos de las últimas 24 horas"
+      >
         {historias.map((h, i) => (
           <button
             key={h.id}
@@ -126,7 +129,10 @@ function StoriesBar() {
                 style={{ borderColor: "var(--color-bg)" }}
               />
             </span>
-            <span className="text-xs truncate w-full text-center" style={{ color: "var(--color-text-muted)" }}>
+            <span
+              className="text-xs truncate w-full text-center"
+              style={{ color: "var(--color-text-muted)" }}
+            >
               {h.usuario_nombre.split(" ")[0]}
             </span>
           </button>

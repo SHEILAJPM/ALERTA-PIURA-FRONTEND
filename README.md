@@ -102,11 +102,11 @@ Copiar [`.env.example`](.env.example) como `.env`. Todas son opcionales en
 local; sin ellas la app usa `localhost:4000` para el backend, OpenStreetMap
 para el mapa y avisa que la subida de fotos no está configurada.
 
-| Variable                                                     | Uso                                            |
-| ------------------------------------------------------------ | ---------------------------------------------- |
-| `VITE_API_URL` / `VITE_WS_URL`                               | Dirección del backend (REST y WebSocket)       |
-| `VITE_CLOUDINARY_CLOUD_NAME` / `VITE_CLOUDINARY_UPLOAD_PRESET` | Subida de fotos de reportes y reclamos         |
-| `VITE_CARTO_API_KEY`                                         | Mapa base claro/oscuro de CARTO                |
+| Variable                                                       | Uso                                      |
+| -------------------------------------------------------------- | ---------------------------------------- |
+| `VITE_API_URL` / `VITE_WS_URL`                                 | Dirección del backend (REST y WebSocket) |
+| `VITE_CLOUDINARY_CLOUD_NAME` / `VITE_CLOUDINARY_UPLOAD_PRESET` | Subida de fotos de reportes y reclamos   |
+| `VITE_CARTO_API_KEY`                                           | Mapa base claro/oscuro de CARTO          |
 
 Servicios externos que se usan sin clave: Open-Meteo (pronóstico de lluvia) y
 Overpass/OpenStreetMap (hospitales, comisarías y bomberos en el mapa).
