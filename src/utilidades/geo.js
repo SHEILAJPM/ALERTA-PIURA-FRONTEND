@@ -10,7 +10,8 @@ export function distanciaKm(a, b) {
   const dLat = aRadianes(b.lat - a.lat);
   const dLon = aRadianes(b.lon - a.lon);
   const h =
-    Math.sin(dLat / 2) ** 2 + Math.cos(aRadianes(a.lat)) * Math.cos(aRadianes(b.lat)) * Math.sin(dLon / 2) ** 2;
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(aRadianes(a.lat)) * Math.cos(aRadianes(b.lat)) * Math.sin(dLon / 2) ** 2;
   return 2 * RADIO_TIERRA_KM * Math.asin(Math.sqrt(h));
 }
 

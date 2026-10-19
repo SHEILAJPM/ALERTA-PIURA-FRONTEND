@@ -41,7 +41,12 @@ const FILTROS = [
 // la lista inversa: quién NO avisó en las últimas 24 h (con su teléfono),
 // para priorizar a quién llamar o ir a buscar -- por eso es el filtro inicial.
 function ChequeosSeguridad() {
-  const { data: ciudadanos, loading, error, recargar } = useResource(getChequeosSeguridad, [], {
+  const {
+    data: ciudadanos,
+    loading,
+    error,
+    recargar,
+  } = useResource(getChequeosSeguridad, [], {
     intervaloMs: REFRESCO_MS,
   });
   const [filtro, setFiltro] = useState("sin-aviso");
@@ -60,7 +65,10 @@ function ChequeosSeguridad() {
 
   return (
     <RequiereRol roles={ROLES_DEFENSA_CIVIL}>
-      <AdminPageHeader titulo="CHEQUEOS DE SEGURIDAD" subtitulo="«ESTOY A SALVO» · SE ACTUALIZA CADA MINUTO" />
+      <AdminPageHeader
+        titulo="CHEQUEOS DE SEGURIDAD"
+        subtitulo="«ESTOY A SALVO» · SE ACTUALIZA CADA MINUTO"
+      />
 
       <div className="p-4 sm:p-8">
         {error && (
@@ -91,7 +99,11 @@ function ChequeosSeguridad() {
               className="text-sm font-semibold px-3 py-1.5 rounded-full border transition"
               style={
                 filtro === f.id
-                  ? { backgroundColor: "var(--color-primary)", color: "#fff", borderColor: "var(--color-primary)" }
+                  ? {
+                      backgroundColor: "var(--color-primary)",
+                      color: "#fff",
+                      borderColor: "var(--color-primary)",
+                    }
                   : { borderColor: "var(--color-border)", color: "var(--color-text)" }
               }
             >
@@ -121,7 +133,9 @@ function ChequeosSeguridad() {
           </div>
         ) : visibles.length === 0 ? (
           <p style={{ color: "var(--color-text-muted)" }}>
-            {lista.length === 0 ? "Todavía no hay ciudadanos registrados." : "Nadie coincide con este filtro."}
+            {lista.length === 0
+              ? "Todavía no hay ciudadanos registrados."
+              : "Nadie coincide con este filtro."}
           </p>
         ) : (
           <div
@@ -143,7 +157,11 @@ function ChequeosSeguridad() {
                 {visibles.map((c) => {
                   const reciente = esReciente(c.ultimo_chequeo);
                   return (
-                    <tr key={c.usuario_id} className="border-t" style={{ borderColor: "var(--color-border)" }}>
+                    <tr
+                      key={c.usuario_id}
+                      className="border-t"
+                      style={{ borderColor: "var(--color-border)" }}
+                    >
                       <td className="pl-5 pr-4 py-3 font-semibold">{c.nombre}</td>
                       <td className="pr-4 py-3 font-mono-data">
                         {c.telefono ? (
@@ -160,7 +178,10 @@ function ChequeosSeguridad() {
                           style={
                             reciente
                               ? { color: "var(--color-normal)", backgroundColor: "var(--color-normal-soft)" }
-                              : { color: "var(--color-text-muted)", backgroundColor: "var(--color-surface-alt)" }
+                              : {
+                                  color: "var(--color-text-muted)",
+                                  backgroundColor: "var(--color-surface-alt)",
+                                }
                           }
                         >
                           {c.ultimo_chequeo ? formatearFechaHora(c.ultimo_chequeo) : "Nunca"}

@@ -35,7 +35,10 @@ function ReclamoSeguroForm({ onEnviar }) {
 
     for (const archivo of archivos) {
       const id = crypto.randomUUID();
-      setFotos((prev) => [...prev, { id, previsualizacion: URL.createObjectURL(archivo), url: null, subiendo: true }]);
+      setFotos((prev) => [
+        ...prev,
+        { id, previsualizacion: URL.createObjectURL(archivo), url: null, subiendo: true },
+      ]);
       try {
         const url = await subirFoto(archivo);
         setFotos((prev) => prev.map((f) => (f.id === id ? { ...f, url, subiendo: false } : f)));
@@ -146,7 +149,11 @@ function ReclamoSeguroForm({ onEnviar }) {
           <div className="grid grid-cols-3 gap-2 mt-2">
             {fotos.map((foto) => (
               <div key={foto.id} className="relative">
-                <img src={foto.previsualizacion} alt="" className="w-full aspect-square object-cover rounded-lg" />
+                <img
+                  src={foto.previsualizacion}
+                  alt=""
+                  className="w-full aspect-square object-cover rounded-lg"
+                />
                 {foto.subiendo ? (
                   <span className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg text-white text-xs">
                     Subiendo...

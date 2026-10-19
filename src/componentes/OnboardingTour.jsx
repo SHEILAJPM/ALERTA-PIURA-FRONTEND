@@ -21,8 +21,7 @@ const PASOS = [
   {
     icono: "bi-camera",
     titulo: "Reporta lo que ves",
-    texto:
-      "Comparte una foto de calles inundadas o daños en tu zona. No necesitas cuenta para reportar.",
+    texto: "Comparte una foto de calles inundadas o daños en tu zona. No necesitas cuenta para reportar.",
   },
   {
     icono: "bi-exclamation-triangle-fill",

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { obtenerTokenGuardado } from "./AuthContext";
 
 const WebSocketContext = createContext(null);
@@ -86,7 +86,10 @@ export function useWebSocketEvent(tipo, handler) {
   const ctx = useContext(WebSocketContext);
   if (!ctx) throw new Error("useWebSocketEvent debe usarse dentro de WebSocketProvider");
   const handlerRef = useRef(handler);
-  handlerRef.current = handler;
+  // Siempre el handler más reciente, sin re-suscribirse en cada render.
+  useLayoutEffect(() => {
+    handlerRef.current = handler;
+  });
 
   useEffect(() => {
     return ctx.subscribe(tipo, (payload) => handlerRef.current(payload));

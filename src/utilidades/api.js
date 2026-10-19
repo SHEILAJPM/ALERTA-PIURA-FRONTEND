@@ -116,7 +116,9 @@ export function getReportes({
   soloMios = false,
   incluirArchivados = false,
 } = {}) {
-  return apiFetch(`/api/reportes-ciudadanos${query({ limite, conFoto, antes, soloMios, incluirArchivados })}`);
+  return apiFetch(
+    `/api/reportes-ciudadanos${query({ limite, conFoto, antes, soloMios, incluirArchivados })}`
+  );
 }
 
 export function crearReporte({ autor_nombre, descripcion, foto_url, lon, lat }) {

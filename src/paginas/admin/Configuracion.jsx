@@ -22,7 +22,8 @@ const CANALES = [
   {
     campo: "sms_habilitado",
     titulo: "SMS",
-    descripcion: "Mensajes de texto a ciudadanos con teléfono que aceptaron recibirlos. Tiene costo por mensaje.",
+    descripcion:
+      "Mensajes de texto a ciudadanos con teléfono que aceptaron recibirlos. Tiene costo por mensaje.",
   },
   {
     campo: "email_habilitado",
@@ -36,7 +37,10 @@ const CANALES = [
 // cada cambio es independiente y queda registrado en la auditoría.
 function FilaCanal({ canal, activo, guardando, onCambiar }) {
   return (
-    <div className="flex items-start justify-between gap-4 py-4 border-t first:border-t-0" style={{ borderColor: "var(--color-border)" }}>
+    <div
+      className="flex items-start justify-between gap-4 py-4 border-t first:border-t-0"
+      style={{ borderColor: "var(--color-border)" }}
+    >
       <div>
         <p className="font-semibold">{canal.titulo}</p>
         <p className="text-sm mt-0.5" style={{ color: "var(--color-text-muted)" }}>

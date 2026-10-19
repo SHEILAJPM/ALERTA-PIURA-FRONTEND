@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useUltimaLectura } from "../../ganchos/useUltimaLectura";
 import { useEstadoSensores } from "../../ganchos/useEstadoSensores";
 import { useAlertasSOS } from "../../ganchos/useAlertasSOS";
@@ -190,16 +190,13 @@ const SENSOR_POR_DEFECTO = "RIO-PIURA-01";
 
 function Despacho() {
   const { data: sensores } = useEstadoSensores();
-  const [sensorCodigo, setSensorCodigo] = useState(SENSOR_POR_DEFECTO);
-
   // Igual que Home.jsx: si el sensor por defecto ya no existe (renombrado o
   // borrado desde el panel), cae al primero disponible en vez de dejar la
   // consola de despacho pegada a un código muerto durante una emergencia.
-  useEffect(() => {
-    if (sensores && sensores.length > 0 && !sensores.some((s) => s.codigo === sensorCodigo)) {
-      setSensorCodigo(sensores[0].codigo);
-    }
-  }, [sensores, sensorCodigo]);
+  const sensorCodigo =
+    sensores?.length && !sensores.some((s) => s.codigo === SENSOR_POR_DEFECTO)
+      ? sensores[0].codigo
+      : SENSOR_POR_DEFECTO;
 
   const { lectura, loading, error } = useUltimaLectura(sensorCodigo);
   const enLinea = sensores?.filter((s) => s.en_linea).length ?? 0;

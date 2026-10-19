@@ -25,22 +25,23 @@ function ubicacionAproximada() {
 }
 
 const soportado =
-  typeof window !== "undefined" && "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  typeof window !== "undefined" &&
+  "serviceWorker" in navigator &&
+  "PushManager" in window &&
+  "Notification" in window;
 
 // Campana del header: activa/desactiva las notificaciones push del navegador
 // ante cambios de estado del río. Se oculta sola si el navegador no las
 // soporta, si el backend no tiene claves VAPID configuradas o si no hay
 // service worker (en `npm run dev` no se registra; sí en build/preview).
 function NotificacionesToggle() {
-  const [estado, setEstado] = useState("cargando"); // cargando | oculto | inactivo | activo | bloqueado
+  // cargando | oculto | inactivo | activo | bloqueado
+  const [estado, setEstado] = useState(soportado ? "cargando" : "oculto");
   const [clave, setClave] = useState(null);
   const [procesando, setProcesando] = useState(false);
 
   useEffect(() => {
-    if (!soportado) {
-      setEstado("oculto");
-      return undefined;
-    }
+    if (!soportado) return undefined;
     let cancelado = false;
     (async () => {
       try {
