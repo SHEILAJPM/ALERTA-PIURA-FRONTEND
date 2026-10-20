@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 import Icon from "./Icon";
+import AlertaGlobal from "./AlertaGlobal";
 import { useAuth } from "../contexto/AuthContext";
 import { ROLES_ADMINISTRADOR, ROLES_OPERADOR_TECNICO, ROLES_DEFENSA_CIVIL } from "../constantes/roles";
 
@@ -54,7 +55,7 @@ function itemClass({ isActive }) {
   }`;
 }
 
-function GrupoAccordion({ grupo, abierto, onToggle }) {
+function GrupoAccordion({ grupo, abierto, onToggle, onNavegar }) {
   return (
     <div className="mb-1">
       <button
@@ -69,7 +70,7 @@ function GrupoAccordion({ grupo, abierto, onToggle }) {
       {abierto && (
         <nav className="flex flex-col gap-0.5 mt-0.5 mb-2">
           {grupo.items.map((item) => (
-            <NavLink key={item.to} to={item.to} className={itemClass}>
+            <NavLink key={item.to} to={item.to} className={itemClass} onClick={onNavegar}>
               <Icon name={item.icon} className="w-4 text-center -ml-1" aria-hidden="true" />
               {item.label}
             </NavLink>
@@ -84,6 +85,21 @@ function AdminLayout() {
   const { usuario, logout } = useAuth();
   const gruposVisibles = GRUPOS.filter((g) => g.roles.includes(usuario?.rol));
   const [abiertos, setAbiertos] = useState(() => new Set(gruposVisibles.slice(0, 1).map((g) => g.id)));
+  // Solo en pantallas chicas: el menú lateral pasa a ser un panel deslizable
+  // (Defensa Civil usa el panel desde el celular, en campo). En escritorio
+  // siempre está visible y este estado no tiene efecto.
+  const [menuAbierto, setMenuAbierto] = useState(false);
+
+  useEffect(() => {
+    if (!menuAbierto) return undefined;
+    const cerrarConEscape = (e) => e.key === "Escape" && setMenuAbierto(false);
+    document.addEventListener("keydown", cerrarConEscape);
+    return () => document.removeEventListener("keydown", cerrarConEscape);
+  }, [menuAbierto]);
+
+  function cerrarMenu() {
+    setMenuAbierto(false);
+  }
 
   function alternar(id) {
     setAbiertos((prev) => {
@@ -95,11 +111,59 @@ function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ backgroundColor: "var(--color-bg)" }}>
-      <aside
-        className="w-72 shrink-0 flex flex-col p-4 overflow-y-auto"
+    <div className="min-h-screen lg:flex" style={{ backgroundColor: "var(--color-bg)" }}>
+      <div
+        className="lg:hidden sticky top-0 z-30 h-14 flex items-center gap-3 px-4 text-white"
         style={{ backgroundColor: "var(--color-brand-chrome)" }}
       >
+        <button
+          type="button"
+          onClick={() => setMenuAbierto(true)}
+          aria-label="Abrir menú del panel"
+          aria-expanded={menuAbierto}
+          aria-controls="menu-panel"
+          className="p-2 -ml-2"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          >
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        </button>
+        <p className="font-bold truncate flex-1">Río Piura Alerta</p>
+        <span
+          className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0"
+          style={{ backgroundColor: "var(--color-dorado)", color: "var(--color-brand-chrome)" }}
+        >
+          Modo operativo
+        </span>
+      </div>
+
+      {menuAbierto && (
+        <div className="lg:hidden fixed inset-0 z-40 bg-black/50" onClick={cerrarMenu} aria-hidden="true" />
+      )}
+
+      <aside
+        id="menu-panel"
+        className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] flex flex-col p-4 overflow-y-auto transition-transform lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:max-w-none lg:shrink-0 lg:translate-x-0 lg:visible ${
+          menuAbierto ? "translate-x-0" : "-translate-x-full invisible"
+        }`}
+        style={{ backgroundColor: "var(--color-brand-chrome)" }}
+      >
+        <button
+          type="button"
+          onClick={cerrarMenu}
+          aria-label="Cerrar menú del panel"
+          className="lg:hidden self-end p-2 -mr-1 text-white/70 hover:text-white"
+        >
+          <Icon name="bi-x-lg" aria-hidden="true" />
+        </button>
         <div className="flex items-center gap-3 px-2 py-3">
           <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden shrink-0">
             <img src="/images/escudo-piura.png" alt="Escudo de Piura" className="w-8 h-8 object-contain" />
@@ -122,12 +186,14 @@ function AdminLayout() {
               grupo={grupo}
               abierto={abiertos.has(grupo.id)}
               onToggle={() => alternar(grupo.id)}
+              onNavegar={cerrarMenu}
             />
           ))}
         </div>
 
         <NavLink
           to="/"
+          onClick={cerrarMenu}
           className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition mt-2"
         >
           <span>←</span>
@@ -136,7 +202,7 @@ function AdminLayout() {
 
         <div className="mt-4 pt-4 border-t border-white/10">
           <div className="flex items-center justify-between px-2">
-            <NavLink to="/perfil" className="min-w-0 hover:opacity-80 transition">
+            <NavLink to="/perfil" onClick={cerrarMenu} className="min-w-0 hover:opacity-80 transition">
               <p className="text-sm font-semibold text-white truncate">{usuario?.nombre}</p>
               <p className="text-xs text-white/50 truncate">{usuario?.rol}</p>
             </NavLink>
@@ -153,6 +219,7 @@ function AdminLayout() {
       </aside>
 
       <div className="flex-1 min-w-0">
+        <AlertaGlobal enPanel />
         <Outlet />
       </div>
     </div>

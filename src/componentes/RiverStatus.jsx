@@ -50,14 +50,16 @@ function RiverStatus({ sensorCodigo = SENSOR_POR_DEFECTO, nombreSensor }) {
     );
   }
 
-  if (error) {
+  // Sin ningún dato que mostrar: el error ocupa el lugar de la tarjeta. El
+  // detalle técnico va al título (hover) para quien esté depurando, no al texto.
+  if (error && !lectura) {
     return (
-      <ErrorBanner
-        message={`No se pudo conectar con el backend (${error}). Verifica que el servidor esté corriendo en ${
-          import.meta.env.VITE_API_URL
-        }.`}
-        onRetry={recargar}
-      />
+      <div title={error}>
+        <ErrorBanner
+          message="No pudimos obtener el nivel del río en este momento. Revisa tu conexión a internet e intenta de nuevo. Si hay riesgo, sigue las indicaciones de Defensa Civil."
+          onRetry={recargar}
+        />
+      </div>
     );
   }
 
@@ -66,6 +68,22 @@ function RiverStatus({ sensorCodigo = SENSOR_POR_DEFECTO, nombreSensor }) {
       className="rounded-3xl border p-6"
       style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
     >
+      {/* Falló una actualización pero hay un dato anterior: mejor mostrarlo
+          avisando que puede estar desactualizado que dejar la tarjeta vacía. */}
+      {error && (
+        <div
+          title={error}
+          className="flex items-start gap-2 rounded-xl px-4 py-3 mb-5 text-sm font-medium"
+          style={{ backgroundColor: "var(--color-prealerta-soft)", color: "var(--color-prealerta)" }}
+        >
+          <Icon name="bi-exclamation-triangle-fill" aria-hidden="true" />
+          <span>
+            No pudimos actualizar el nivel: mostramos el último dato, de las{" "}
+            {formatearHora(lectura.medido_en)}.
+          </span>
+        </div>
+      )}
+
       {sensorSinSenal && (
         <div
           className="flex items-start gap-2 rounded-xl px-4 py-3 mb-5 text-sm font-medium"
