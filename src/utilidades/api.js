@@ -14,7 +14,9 @@ export class ApiError extends Error {
 
 async function apiFetch(path, options) {
   const token = obtenerTokenGuardado();
-  const headers = { "Content-Type": "application/json", ...options?.headers };
+  // Content-Type solo cuando hay body: en un GET obliga al navegador a hacer
+  // un preflight CORS extra sin necesidad.
+  const headers = { ...(options?.body ? { "Content-Type": "application/json" } : {}), ...options?.headers };
   if (token) headers.Authorization = `Bearer ${token}`;
 
   let res;
