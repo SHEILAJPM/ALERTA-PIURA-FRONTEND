@@ -3,6 +3,7 @@ import { useAuth } from "../contexto/AuthContext";
 import Avatar from "./Avatar";
 import Icon from "./Icon";
 import { formatearDistancia } from "../utilidades/geo";
+import { formatearTiempoRelativo } from "../utilidades/fecha";
 
 // 'descartado' solo lo ve el propio autor en "Mis reportes" (ver
 // MisReportes.jsx): el feed público nunca recibe reportes archivados (ver
@@ -13,19 +14,6 @@ const ESTADO_LABEL = {
   verificado: null, // el caso normal no necesita aclaración aparte
   descartado: { text: "No se publicó (archivado)", color: "var(--color-alerta)" },
 };
-
-function formatearRelativo(iso) {
-  const minutos = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (minutos < 1) return "ahora";
-  if (minutos < 60) return `${minutos} min`;
-  const horas = Math.floor(minutos / 60);
-  if (horas < 24) return `${horas} h`;
-  const dias = Math.floor(horas / 24);
-  if (dias < 7) return `${dias} d`;
-  const semanas = Math.floor(dias / 7);
-  if (semanas < 5) return `${semanas} sem`;
-  return new Date(iso).toLocaleDateString("es-PE", { day: "2-digit", month: "short" });
-}
 
 async function compartir(reporte) {
   const texto = `${reporte.usuario_nombre} en Piura Alerta: ${reporte.descripcion}`;
@@ -86,7 +74,7 @@ function ReportCard({ reporte, onLike, onConfirmar, distanciaKm }) {
             {reporte.usuario_nombre}
             <span className="font-normal" style={{ color: "var(--color-text-muted)" }}>
               {" "}
-              · {formatearRelativo(reporte.creado_en)}
+              · {formatearTiempoRelativo(reporte.creado_en)}
               {distanciaKm != null && <> · {formatearDistancia(distanciaKm)}</>}
             </span>
           </p>

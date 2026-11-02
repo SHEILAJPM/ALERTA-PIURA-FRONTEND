@@ -13,8 +13,8 @@ import { useHistorico } from "../ganchos/useHistorico";
 import { usePronosticoLluvia } from "../ganchos/usePronosticoLluvia";
 import { recommendations } from "../datos/content";
 import { formatearHora } from "../utilidades/fecha";
+import { SENSOR_POR_DEFECTO } from "../constantes/sensores";
 
-const SENSOR_POR_DEFECTO = "RIO-PIURA-01";
 const CLAVE_SENSOR_GUARDADO = "piura-alerta-sensor";
 
 const selectStyle = {

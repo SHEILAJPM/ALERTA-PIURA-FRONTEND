@@ -23,7 +23,9 @@ export function puntoDesdeGeoJSON(geojson) {
 
 export function formatearDistancia(km) {
   if (km == null || !Number.isFinite(km)) return "";
-  if (km < 1) return `a ${Math.max(10, Math.round((km * 1000) / 10) * 10)} m`;
+  // Redondeado a decenas, 0.996 km daría "a 1000 m": desde ahí se muestra en km.
+  const metros = Math.max(10, Math.round((km * 1000) / 10) * 10);
+  if (metros < 1000) return `a ${metros} m`;
   if (km < 10) return `a ${km.toFixed(1)} km`;
   return `a ${Math.round(km)} km`;
 }

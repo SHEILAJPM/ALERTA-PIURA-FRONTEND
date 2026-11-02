@@ -19,6 +19,7 @@ describe("utilidades/geo", () => {
 
   it("formatea la distancia en metros o kilómetros", () => {
     expect(formatearDistancia(0.234)).toBe("a 230 m");
+    expect(formatearDistancia(0.997)).toBe("a 1.0 km");
     expect(formatearDistancia(3.456)).toBe("a 3.5 km");
     expect(formatearDistancia(25.4)).toBe("a 25 km");
     expect(formatearDistancia(null)).toBe("");

@@ -1,7 +1,7 @@
 import { obtenerTokenGuardado, dispararSesionExpirada } from "../contexto/AuthContext";
+import { SENSOR_POR_DEFECTO } from "../constantes/sensores";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
-const SENSOR_POR_DEFECTO = "RIO-PIURA-01";
 
 // Error con el status HTTP adjunto: algunos llamadores necesitan distinguir
 // un 404 "todavía no hay datos" (ej. sensor sin lecturas) de una falla real.
@@ -14,7 +14,9 @@ export class ApiError extends Error {
 
 async function apiFetch(path, options) {
   const token = obtenerTokenGuardado();
-  const headers = { "Content-Type": "application/json", ...options?.headers };
+  // Content-Type solo cuando hay body: en un GET obliga al navegador a hacer
+  // un preflight CORS extra sin necesidad.
+  const headers = { ...(options?.body ? { "Content-Type": "application/json" } : {}), ...options?.headers };
   if (token) headers.Authorization = `Bearer ${token}`;
 
   let res;

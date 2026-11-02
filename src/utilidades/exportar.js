@@ -4,7 +4,10 @@
 // una tabla simple que solo usa el panel operativo.
 
 function celdaCSV(valor) {
-  const texto = valor === null || valor === undefined ? "" : String(valor);
+  let texto = valor === null || valor === undefined ? "" : String(valor);
+  // Un reporte ciudadano que empiece con "=", "+", "-" o "@" Excel lo
+  // ejecutaría como fórmula al abrir el CSV: el apóstrofo lo deja como texto.
+  if (typeof valor === "string" && /^[=+\-@]/.test(texto)) texto = `'${texto}`;
   return /[";\n\r]/.test(texto) ? `"${texto.replace(/"/g, '""')}"` : texto;
 }
 

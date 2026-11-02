@@ -19,7 +19,11 @@ function StatusBadge({ status }) {
       }`}
       style={{ color: actual.color, backgroundColor: actual.bg }}
     >
-      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: actual.color }} />
+      <span
+        aria-hidden="true"
+        className="w-2.5 h-2.5 rounded-full"
+        style={{ backgroundColor: actual.color }}
+      />
       {actual.text}
     </span>
   );

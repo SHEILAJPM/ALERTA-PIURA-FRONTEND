@@ -4,6 +4,8 @@
 // los bloquea (sin interacción previa con la página), no pasa nada: el aviso
 // igual queda visible.
 export function avisarConSonido({ veces = 1, frecuencia = 880 } = {}) {
+  // Sin pitidos no hay onended que cierre el contexto: no abrir uno de más.
+  if (veces < 1) return;
   try {
     const AudioCtx = window.AudioContext ?? window.webkitAudioContext;
     if (!AudioCtx) return;
