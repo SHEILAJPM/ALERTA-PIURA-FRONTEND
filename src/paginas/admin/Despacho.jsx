@@ -10,6 +10,7 @@ import ErrorBanner from "../../componentes/ErrorBanner";
 import ConfirmDialog from "../../componentes/ConfirmDialog";
 import Icon from "../../componentes/Icon";
 import { formatearFechaHora } from "../../utilidades/fecha";
+import { SENSOR_POR_DEFECTO } from "../../constantes/sensores";
 
 const LIMITE_MENSAJE = 1000;
 
@@ -185,8 +186,6 @@ function DifusionManual() {
     </div>
   );
 }
-
-const SENSOR_POR_DEFECTO = "RIO-PIURA-01";
 
 function Despacho() {
   const { data: sensores } = useEstadoSensores();

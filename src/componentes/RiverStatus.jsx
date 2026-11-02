@@ -5,8 +5,7 @@ import { useUltimaLectura } from "../ganchos/useUltimaLectura";
 import { useEstadoSensores } from "../ganchos/useEstadoSensores";
 import Icon from "./Icon";
 import { formatearHora } from "../utilidades/fecha";
-
-const SENSOR_POR_DEFECTO = "RIO-PIURA-01";
+import { SENSOR_POR_DEFECTO } from "../constantes/sensores";
 
 function RiverStatus({ sensorCodigo = SENSOR_POR_DEFECTO, nombreSensor }) {
   const { lectura, loading, error, sinLecturas, recargar } = useUltimaLectura(sensorCodigo);
