@@ -3,13 +3,12 @@ import StatusBadge from "../../componentes/StatusBadge";
 import AdminPageHeader from "../../componentes/admin/AdminPageHeader";
 import Skeleton from "../../componentes/Skeleton";
 import ErrorBanner from "../../componentes/ErrorBanner";
+import { formatearTiempoRelativo } from "../../utilidades/fecha";
 
 function formatearHace(iso) {
   if (!iso) return "sin lecturas";
-  const minutos = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (minutos < 1) return "hace segundos";
-  if (minutos < 60) return `hace ${minutos} min`;
-  return `hace ${Math.round(minutos / 60)} h`;
+  const relativo = formatearTiempoRelativo(iso);
+  return relativo === "ahora" ? "hace segundos" : `hace ${relativo}`;
 }
 
 function Telemetria() {

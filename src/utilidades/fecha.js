@@ -45,3 +45,20 @@ export function formatearFechaHoraCompleta(valor) {
 export function formatearFechaLarga(valor) {
   return formatear(valor, { day: "numeric", month: "long", year: "numeric" });
 }
+
+// "ahora", "5 min", "3 h", "2 d", "1 sem" y, pasado un mes, "19 oct.". Antes
+// estaba copiado en ReportCard.jsx y (con otra variante) en Telemetria.jsx.
+export function formatearTiempoRelativo(valor) {
+  const fecha = aFecha(valor);
+  if (!fecha) return "—";
+  const minutos = Math.floor((Date.now() - fecha.getTime()) / 60000);
+  if (minutos < 1) return "ahora";
+  if (minutos < 60) return `${minutos} min`;
+  const horas = Math.floor(minutos / 60);
+  if (horas < 24) return `${horas} h`;
+  const dias = Math.floor(horas / 24);
+  if (dias < 7) return `${dias} d`;
+  const semanas = Math.floor(dias / 7);
+  if (semanas < 5) return `${semanas} sem`;
+  return formatear(fecha, { day: "2-digit", month: "short" });
+}
