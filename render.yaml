@@ -1,0 +1,39 @@
+# Blueprint de Render (https://render.com/docs/blueprint-spec) para publicar el
+# frontend como sitio estático. Las variables VITE_* se leen al compilar, no en
+# runtime: si se cambian en el dashboard hay que volver a desplegar. Ver DEPLOY.md.
+services:
+  - type: web
+    name: piura-alerta-frontend
+    runtime: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    headers:
+      # El service worker tiene que revalidarse siempre: si queda cacheado,
+      # los usuarios se quedan con la versión vieja de la app.
+      - path: /sw.js
+        name: Cache-Control
+        value: no-cache
+      # Vite pone un hash en el nombre de cada archivo de assets/, así que
+      # nunca cambian: se pueden cachear para siempre.
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+    routes:
+      # BrowserRouter (App.jsx): sin esto, recargar /admin/... devuelve 404.
+      # Render solo aplica la regla si no existe un archivo con esa ruta.
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      # URL del backend en Render, ej. https://piura-alerta-backend.onrender.com
+      - key: VITE_API_URL
+        sync: false
+      # Mismo host que VITE_API_URL pero con wss://
+      - key: VITE_WS_URL
+        sync: false
+      - key: VITE_CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: VITE_CLOUDINARY_UPLOAD_PRESET
+        sync: false
+      - key: VITE_CARTO_API_KEY
+        sync: false
