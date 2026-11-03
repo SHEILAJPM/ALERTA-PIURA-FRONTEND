@@ -141,6 +141,13 @@ export function actualizarEstadoReporte(reporteId, estado) {
 
 // --- Autenticación y perfil ------------------------------------------------
 
+// Nombre según RENIEC para autocompletar el registro (ver backend
+// src/rutas/dni.routes.js). 404 = DNI inexistente; 503 = consulta no
+// configurada o caída, el registro sigue funcionando sin ella.
+export function consultarNombrePorDni(dni) {
+  return apiFetch(`/api/dni/${encodeURIComponent(dni)}`);
+}
+
 export function registrarUsuario(datos) {
   return enviar("/api/auth/registro", "POST", datos);
 }

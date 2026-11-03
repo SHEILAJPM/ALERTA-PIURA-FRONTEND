@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexto/AuthContext";
 import { useModalA11y } from "../ganchos/useModalA11y";
 import { ROLES_PANEL_ADMIN } from "../constantes/roles";
-import { olvidarPassword } from "../utilidades/api";
+import { olvidarPassword, consultarNombrePorDni } from "../utilidades/api";
 
 const inputStyle = {
   borderColor: "var(--color-border)",
@@ -237,9 +237,36 @@ function CampoRegistro({ onExito }) {
   const [mostrarOpcionales, setMostrarOpcionales] = useState(false);
   const [error, setError] = useState(null);
   const [enviando, setEnviando] = useState(false);
+  // null | "buscando" | "encontrado" | "no-encontrado". Si la consulta no
+  // está disponible (503, sin conexión) queda en null: se escribe el nombre a mano.
+  const [estadoDni, setEstadoDni] = useState(null);
+  // DNI de la última consulta: si el usuario sigue tipeando, una respuesta
+  // vieja que llega tarde no debe pisar el nombre.
+  const ultimoDniConsultado = useRef(null);
 
   function actualizar(campo, setter) {
     return (e) => setter((prev) => ({ ...prev, [campo]: e.target.value }));
+  }
+
+  async function cambiarDni(e) {
+    const dni = e.target.value.replace(/\D/g, "").slice(0, 8);
+    setForm((prev) => ({ ...prev, dni }));
+    ultimoDniConsultado.current = dni;
+    if (dni.length !== 8) {
+      setEstadoDni(null);
+      return;
+    }
+
+    setEstadoDni("buscando");
+    try {
+      const { nombre } = await consultarNombrePorDni(dni);
+      if (ultimoDniConsultado.current !== dni) return;
+      setForm((prev) => ({ ...prev, nombre }));
+      setEstadoDni("encontrado");
+    } catch (err) {
+      if (ultimoDniConsultado.current !== dni) return;
+      setEstadoDni(err.status === 404 ? "no-encontrado" : null);
+    }
   }
 
   async function manejarSubmit(e) {
@@ -262,25 +289,45 @@ function CampoRegistro({ onExito }) {
 
   return (
     <form onSubmit={manejarSubmit} className="space-y-3">
+      <div>
+        <input
+          type="text"
+          inputMode="numeric"
+          placeholder="DNI (8 dígitos)"
+          value={form.dni}
+          onChange={cambiarDni}
+          required
+          pattern="\d{8}"
+          maxLength={8}
+          title="8 dígitos"
+          className="w-full rounded-lg border px-3 py-2 text-sm"
+          style={inputStyle}
+        />
+        {estadoDni && (
+          <p
+            className="mt-1 text-xs"
+            role="status"
+            style={{
+              color:
+                estadoDni === "encontrado"
+                  ? "var(--color-normal)"
+                  : estadoDni === "no-encontrado"
+                    ? "var(--color-alerta)"
+                    : "var(--color-text-muted)",
+            }}
+          >
+            {estadoDni === "buscando" && "Buscando en RENIEC..."}
+            {estadoDni === "encontrado" && "✓ DNI verificado"}
+            {estadoDni === "no-encontrado" && "DNI no encontrado en RENIEC, revisa que esté bien escrito"}
+          </p>
+        )}
+      </div>
       <input
         type="text"
-        placeholder="Nombre"
+        placeholder="Nombre completo"
         value={form.nombre}
         onChange={actualizar("nombre", setForm)}
         required
-        className="w-full rounded-lg border px-3 py-2 text-sm"
-        style={inputStyle}
-      />
-      <input
-        type="text"
-        inputMode="numeric"
-        placeholder="DNI (8 dígitos)"
-        value={form.dni}
-        onChange={actualizar("dni", setForm)}
-        required
-        pattern="\d{8}"
-        maxLength={8}
-        title="8 dígitos"
         className="w-full rounded-lg border px-3 py-2 text-sm"
         style={inputStyle}
       />
