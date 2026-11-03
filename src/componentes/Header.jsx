@@ -5,6 +5,7 @@ import NotificacionesToggle from "./NotificacionesToggle";
 import { useWebSocketStatus } from "../contexto/WebSocketContext";
 import { useAuth } from "../contexto/AuthContext";
 import { ROLES_PANEL_ADMIN } from "../constantes/roles";
+import Avatar from "./Avatar";
 
 // Aislado en su propio componente a propósito: el estado que cambia cada
 // segundo vive acá, no en Header, así el tic-tac del reloj no re-renderiza
@@ -19,7 +20,7 @@ function RelojEnVivo() {
 
   return (
     <span
-      className="hidden lg:inline font-mono-data text-sm tabular-nums"
+      className="hidden 2xl:inline font-mono-data text-sm tabular-nums whitespace-nowrap"
       style={{ color: "var(--color-dorado)" }}
     >
       {hora.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
@@ -33,6 +34,7 @@ const LINKS_BASE = [
   { to: "/reportes", label: "Reportes" },
   { to: "/historial", label: "Historial" },
   { to: "/seguro", label: "Seguro" },
+  { to: "/app", label: "Descargar app" },
 ];
 
 const ESTADOS_CONEXION = {
@@ -42,7 +44,7 @@ const ESTADOS_CONEXION = {
 };
 
 function navClass({ isActive }) {
-  return `transition font-medium ${isActive ? "text-white" : "text-white/70 hover:text-white"}`;
+  return `whitespace-nowrap transition font-medium ${isActive ? "text-white" : "text-white/70 hover:text-white"}`;
 }
 
 function navClassMobile({ isActive }) {
@@ -53,7 +55,7 @@ function navClassMobile({ isActive }) {
 // se marca con una insignia dorada en vez del estilo de nav plano, para que
 // se note que no es "una pestaña más".
 function navClassAdmin({ isActive }) {
-  return `text-xs font-bold uppercase tracking-wide px-2.5 py-1 rounded-full transition ${
+  return `whitespace-nowrap text-xs font-bold uppercase tracking-wide px-2.5 py-1 rounded-full transition ${
     isActive ? "text-white" : "text-white/85 hover:text-white"
   }`;
 }
@@ -95,15 +97,15 @@ function Header() {
       className="shadow-md sticky top-0 z-20 border-b-2"
       style={{ backgroundColor: "var(--color-brand-chrome)", borderColor: "var(--color-dorado)" }}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-6 h-20">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center overflow-hidden shrink-0">
-              <img src="/images/escudo-piura.png" alt="Escudo de Piura" className="w-9 h-9 object-contain" />
-            </div>
+            <img src="/images/logo.svg" alt="" width={44} height={44} className="w-11 h-11 shrink-0" />
 
             <div className="min-w-0">
-              <h1 className="text-lg font-bold text-white leading-tight truncate">Río Piura Alerta</h1>
+              <h1 className="text-lg font-bold text-white leading-tight whitespace-nowrap">
+                Río Piura Alerta
+              </h1>
               <div className="flex items-center gap-1.5 text-xs text-white/70">
                 <span className={`w-1.5 h-1.5 rounded-full ${conexion.color}`} />
                 {conexion.texto}
@@ -111,8 +113,10 @@ function Header() {
             </div>
           </div>
 
-          <div className="hidden sm:flex items-center">
-            <nav className="flex items-center gap-3 sm:gap-6 text-sm sm:text-base">
+          {/* Recién desde xl entran todos los enlaces + sesión en una sola
+              línea; por debajo, el menú hamburguesa. */}
+          <div className="hidden xl:flex items-center">
+            <nav className="flex items-center gap-5 text-[15px]">
               {links.map((link) =>
                 link.to === "/admin" ? (
                   <NavLink key={link.to} to={link.to} className={navClassAdmin} style={estiloAdminBadge}>
@@ -126,18 +130,23 @@ function Header() {
               )}
             </nav>
 
-            <div className="flex items-center gap-4 sm:gap-5 ml-4 sm:ml-6 pl-4 sm:pl-6 border-l border-white/15">
+            <div className="flex items-center gap-4 ml-5 pl-5 border-l border-white/15">
               <RelojEnVivo />
 
               {usuario ? (
-                <div className="flex items-center gap-2 sm:gap-3 text-sm text-white/90">
-                  <NavLink to="/perfil" className="hidden sm:inline hover:underline">
-                    {usuario.nombre}
+                <div className="flex items-center gap-3 text-sm text-white/90">
+                  <NavLink
+                    to="/perfil"
+                    title={`${usuario.nombre} · Mi perfil`}
+                    aria-label={`${usuario.nombre} · Mi perfil`}
+                    className="rounded-full ring-2 ring-white/40 hover:ring-white transition"
+                  >
+                    <Avatar nombre={usuario.nombre} size={34} />
                   </NavLink>
                   <button
                     type="button"
                     onClick={logout}
-                    className="font-medium text-white/70 hover:text-white transition"
+                    className="whitespace-nowrap font-medium text-white/70 hover:text-white transition"
                   >
                     Cerrar sesión
                   </button>
@@ -146,7 +155,7 @@ function Header() {
                 <button
                   type="button"
                   onClick={() => abrirModal("login")}
-                  className="font-medium text-white/70 hover:text-white transition"
+                  className="whitespace-nowrap font-medium text-white/70 hover:text-white transition"
                 >
                   Iniciar sesión
                 </button>
@@ -160,7 +169,7 @@ function Header() {
           <button
             type="button"
             onClick={() => setMenuAbierto((v) => !v)}
-            className="sm:hidden shrink-0 text-white p-2 -mr-2"
+            className="xl:hidden shrink-0 text-white p-2 -mr-2"
             aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
             aria-expanded={menuAbierto}
           >
@@ -169,7 +178,7 @@ function Header() {
         </div>
 
         {menuAbierto && (
-          <div className="sm:hidden pb-4 border-t border-white/10 pt-3">
+          <div className="xl:hidden pb-4 border-t border-white/10 pt-3">
             <nav className="flex flex-col">
               {links.map((link) =>
                 link.to === "/admin" ? (

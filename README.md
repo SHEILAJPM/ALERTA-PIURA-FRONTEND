@@ -9,7 +9,7 @@
 
 El **Frontend de PIURA ALERTA** representa el Centro de Mando y Control Hidrológico para la prevención de inundaciones en la cuenca del Río Piura.
 
-Es un Dashboard web interactivo desarrollado con **React 18**, utilizando una interfaz **Civic Tech Light Mode**.
+Es un Dashboard web interactivo desarrollado con **React 19**, utilizando una interfaz **Civic Tech Light Mode**.
 
 La aplicación permite:
 
@@ -26,7 +26,6 @@ La aplicación permite:
 | ----------------------- | ------------------------------------------------- |
 | React 19                | Desarrollo de componentes e interfaz              |
 | Tailwind CSS            | Diseño y estilos responsivos                      |
-| Recharts                | Gráficos en tiempo real                           |
 | Leaflet / React-Leaflet | Mapas interactivos                                |
 | SVG inline (`Icon.jsx`) | Íconos, sin cargar una fuente de íconos completa  |
 | WebSocket API           | Comunicación en tiempo real con el Backend        |
@@ -37,8 +36,8 @@ La aplicación permite:
 ### 1. Clonar repositorio
 
 ```bash
-git clone https://github.com/sheilajpm/piura-alerta-frontend.git
-cd piura-alerta-frontend
+git clone https://github.com/SHEILAJPM/ALERTA-PIURA-FRONTEND.git
+cd ALERTA-PIURA-FRONTEND
 ```
 
 ### 2. Instalar dependencias
@@ -113,7 +112,7 @@ Overpass/OpenStreetMap (hospitales, comisarías y bomberos en el mapa).
 
 ## 🚢 Despliegue
 
-Ver [`DEPLOY.md`](DEPLOY.md) para la guía completa (Vercel/Netlify, cuenta de
+Ver [`DEPLOY.md`](DEPLOY.md) para la guía completa (Render como sitio estático, cuenta de
 Cloudinary y variables de entorno de producción).
 
 ## 📊 Funcionalidades principales
