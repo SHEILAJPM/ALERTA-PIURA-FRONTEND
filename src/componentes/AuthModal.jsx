@@ -232,13 +232,8 @@ function CampoOlvidePassword({ onVolver }) {
 
 function CampoRegistro({ onExito }) {
   const { registro } = useAuth();
-  const [form, setForm] = useState({ nombre: "", correo: "", password: "" });
-  const [datosOpcionales, setDatosOpcionales] = useState({
-    dni: "",
-    telefono: "",
-    direccion: "",
-    recibirSMS: false,
-  });
+  const [form, setForm] = useState({ nombre: "", dni: "", telefono: "", correo: "", password: "" });
+  const [datosOpcionales, setDatosOpcionales] = useState({ direccion: "", recibirSMS: false });
   const [mostrarOpcionales, setMostrarOpcionales] = useState(false);
   const [error, setError] = useState(null);
   const [enviando, setEnviando] = useState(false);
@@ -252,13 +247,10 @@ function CampoRegistro({ onExito }) {
     setEnviando(true);
     setError(null);
     try {
-      const telefono = datosOpcionales.telefono.trim() || undefined;
       await registro({
         ...form,
-        dni: datosOpcionales.dni.trim() || undefined,
-        telefono,
         direccion: datosOpcionales.direccion.trim() || undefined,
-        recibir_alertas_sms: telefono ? datosOpcionales.recibirSMS : undefined,
+        recibir_alertas_sms: datosOpcionales.recibirSMS,
       });
       onExito?.();
     } catch (err) {
@@ -279,6 +271,36 @@ function CampoRegistro({ onExito }) {
         className="w-full rounded-lg border px-3 py-2 text-sm"
         style={inputStyle}
       />
+      <input
+        type="text"
+        inputMode="numeric"
+        placeholder="DNI (8 dígitos)"
+        value={form.dni}
+        onChange={actualizar("dni", setForm)}
+        required
+        pattern="\d{8}"
+        maxLength={8}
+        title="8 dígitos"
+        className="w-full rounded-lg border px-3 py-2 text-sm"
+        style={inputStyle}
+      />
+      <input
+        type="tel"
+        placeholder="Celular (ej. 987654321)"
+        value={form.telefono}
+        onChange={actualizar("telefono", setForm)}
+        required
+        className="w-full rounded-lg border px-3 py-2 text-sm"
+        style={inputStyle}
+      />
+      <label className="flex items-center gap-2 text-xs" style={{ color: "var(--color-text-muted)" }}>
+        <input
+          type="checkbox"
+          checked={datosOpcionales.recibirSMS}
+          onChange={(e) => setDatosOpcionales((prev) => ({ ...prev, recibirSMS: e.target.checked }))}
+        />
+        Avisarme por SMS ante alertas del río
+      </label>
       <input
         type="email"
         placeholder="Correo"
@@ -305,40 +327,11 @@ function CampoRegistro({ onExito }) {
         className="text-xs font-semibold"
         style={{ color: "var(--color-primary)" }}
       >
-        {mostrarOpcionales ? "− Ocultar" : "+ Agregar"} DNI / teléfono / dirección (opcional)
+        {mostrarOpcionales ? "− Ocultar" : "+ Agregar"} dirección (opcional)
       </button>
 
       {mostrarOpcionales && (
         <div className="space-y-2 pt-1">
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="DNI (8 dígitos)"
-            value={datosOpcionales.dni}
-            onChange={actualizar("dni", setDatosOpcionales)}
-            pattern="\d{8}"
-            title="8 dígitos"
-            className="w-full rounded-lg border px-3 py-2 text-sm"
-            style={inputStyle}
-          />
-          <input
-            type="tel"
-            placeholder="Teléfono"
-            value={datosOpcionales.telefono}
-            onChange={actualizar("telefono", setDatosOpcionales)}
-            className="w-full rounded-lg border px-3 py-2 text-sm"
-            style={inputStyle}
-          />
-          {datosOpcionales.telefono.trim() && (
-            <label className="flex items-center gap-2 text-xs" style={{ color: "var(--color-text-muted)" }}>
-              <input
-                type="checkbox"
-                checked={datosOpcionales.recibirSMS}
-                onChange={(e) => setDatosOpcionales((prev) => ({ ...prev, recibirSMS: e.target.checked }))}
-              />
-              Avisarme por SMS ante alertas del río
-            </label>
-          )}
           <input
             type="text"
             placeholder="Dirección"
