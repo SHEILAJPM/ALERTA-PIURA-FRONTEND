@@ -10,7 +10,6 @@ import InvitacionSesion from "./componentes/InvitacionSesion";
 import ProtectedRoute from "./componentes/ProtectedRoute";
 import Home from "./paginas/Home";
 import MiPerfil from "./paginas/MiPerfil";
-import RestablecerPassword from "./paginas/RestablecerPassword";
 import VerificarCorreo from "./paginas/VerificarCorreo";
 import Seguro from "./paginas/Seguro";
 import MiPoliza from "./paginas/MiPoliza";
@@ -63,7 +62,7 @@ function App() {
                 />
                 <Route path="/reportes" element={conSuspenso(<Reportes />)} />
                 <Route path="/historial" element={conSuspenso(<Historial />)} />
-                <Route path="/restablecer-password" element={<RestablecerPassword />} />
+                <Route path="/restablecer-password" element={<Navigate to="/" replace />} />
                 <Route path="/verificar-correo" element={<VerificarCorreo />} />
                 <Route path="/seguro" element={<Seguro />} />
                 <Route element={<ProtectedRoute />}>

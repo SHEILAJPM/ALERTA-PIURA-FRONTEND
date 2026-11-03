@@ -45,7 +45,7 @@ volver al servicio del backend en Render y completar:
 - `CORS_ORIGIN=https://piura-alerta-frontend.onrender.com` — sin esto el
   navegador bloquea las requests.
 - `FRONTEND_URL=https://piura-alerta-frontend.onrender.com` — para el enlace de
-  recuperación de contraseña.
+  confirmación de correo.
 
 ## 3. Verificar
 
