@@ -13,6 +13,9 @@ import MiPerfil from "./paginas/MiPerfil";
 import VerificarCorreo from "./paginas/VerificarCorreo";
 import Seguro from "./paginas/Seguro";
 import MiPoliza from "./paginas/MiPoliza";
+// No lazy a propósito: su gancho escucha `beforeinstallprompt`, que el
+// navegador dispara una sola vez al cargar la página (ver useInstalarApp.js).
+import DescargarApp from "./paginas/DescargarApp";
 import { ROLES_PANEL_ADMIN } from "./constantes/roles";
 
 // Mapa y Reportes cargan Leaflet (pesado) a través de RiesgoMap: lazy para
@@ -65,6 +68,7 @@ function App() {
                 <Route path="/restablecer-password" element={<Navigate to="/" replace />} />
                 <Route path="/verificar-correo" element={<VerificarCorreo />} />
                 <Route path="/seguro" element={<Seguro />} />
+                <Route path="/app" element={<DescargarApp />} />
                 <Route element={<ProtectedRoute />}>
                   <Route path="/perfil" element={<MiPerfil />} />
                   <Route path="/mi-poliza" element={<MiPoliza />} />
