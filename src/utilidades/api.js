@@ -176,8 +176,8 @@ export function olvidarPassword(correo) {
   return enviar("/api/auth/olvide-password", "POST", { correo });
 }
 
-export function restablecerPassword({ token, passwordNueva }) {
-  return enviar("/api/auth/restablecer-password", "POST", { token, passwordNueva });
+export function restablecerPassword({ correo, codigo, passwordNueva }) {
+  return enviar("/api/auth/restablecer-password", "POST", { correo, codigo, passwordNueva });
 }
 
 export function verificarCorreo(token) {

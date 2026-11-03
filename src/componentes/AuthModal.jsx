@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexto/AuthContext";
 import { useModalA11y } from "../ganchos/useModalA11y";
 import { ROLES_PANEL_ADMIN } from "../constantes/roles";
-import { olvidarPassword, consultarNombrePorDni } from "../utilidades/api";
+import { olvidarPassword, restablecerPassword, consultarNombrePorDni } from "../utilidades/api";
 
 const inputStyle = {
   borderColor: "var(--color-border)",
@@ -152,19 +152,25 @@ function CampoLogin({ onExito, onOlvideContrasena, onPaso2FA }) {
   );
 }
 
+// Recuperación en dos pasos dentro del mismo modal: primero el correo, después
+// el código de 6 dígitos que llega ahí junto con la contraseña nueva.
 function CampoOlvidePassword({ onVolver }) {
+  const [paso, setPaso] = useState("correo"); // "correo" | "codigo" | "listo"
   const [correo, setCorreo] = useState("");
+  const [codigo, setCodigo] = useState("");
+  const [passwordNueva, setPasswordNueva] = useState("");
   const [enviando, setEnviando] = useState(false);
-  const [enviado, setEnviado] = useState(false);
   const [error, setError] = useState(null);
+  const [reenviado, setReenviado] = useState(false);
 
-  async function manejarSubmit(e) {
-    e.preventDefault();
+  async function pedirCodigo(e) {
+    e?.preventDefault();
     setEnviando(true);
     setError(null);
     try {
       await olvidarPassword(correo);
-      setEnviado(true);
+      if (paso === "codigo") setReenviado(true);
+      setPaso("codigo");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -172,12 +178,41 @@ function CampoOlvidePassword({ onVolver }) {
     }
   }
 
-  if (enviado) {
+  async function cambiarPassword(e) {
+    e.preventDefault();
+    setEnviando(true);
+    setError(null);
+    try {
+      await restablecerPassword({ correo, codigo, passwordNueva });
+      setPaso("listo");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  const mensajeError = error && (
+    <p className="text-sm" style={{ color: "var(--color-alerta)" }}>
+      {error}
+    </p>
+  );
+  const volver = (
+    <button
+      type="button"
+      onClick={onVolver}
+      className="w-full text-sm font-medium text-center"
+      style={{ color: "var(--color-text-muted)" }}
+    >
+      ← Volver a iniciar sesión
+    </button>
+  );
+
+  if (paso === "listo") {
     return (
       <div className="space-y-4">
         <p className="text-sm" style={{ color: "var(--color-text)" }}>
-          Si <strong>{correo}</strong> tiene una cuenta, te llegará un enlace para elegir una nueva
-          contraseña. Revisa tu bandeja de entrada (y spam).
+          ✓ Tu contraseña se cambió. Ya puedes iniciar sesión con la nueva.
         </p>
         <button
           type="button"
@@ -185,16 +220,71 @@ function CampoOlvidePassword({ onVolver }) {
           className="w-full rounded-lg py-2.5 font-semibold text-white"
           style={{ backgroundColor: "var(--color-primary)" }}
         >
-          Volver a iniciar sesión
+          Iniciar sesión
         </button>
       </div>
     );
   }
 
+  if (paso === "codigo") {
+    return (
+      <form onSubmit={cambiarPassword} className="space-y-3">
+        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+          Si <strong>{correo}</strong> tiene una cuenta, te llegó un código de 6 dígitos (revisa también
+          spam). Vence en 15 minutos.
+        </p>
+        <input
+          type="text"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          placeholder="000000"
+          aria-label="Código de 6 dígitos"
+          value={codigo}
+          onChange={(e) => setCodigo(e.target.value.replace(/\D/g, "").slice(0, 6))}
+          required
+          pattern="\d{6}"
+          maxLength={6}
+          className="w-full rounded-lg border px-3 py-2 text-sm text-center tracking-[0.5em] font-mono-data"
+          style={inputStyle}
+        />
+        <input
+          type="password"
+          autoComplete="new-password"
+          placeholder="Nueva contraseña (mínimo 8 caracteres)"
+          value={passwordNueva}
+          onChange={(e) => setPasswordNueva(e.target.value)}
+          required
+          minLength={8}
+          className="w-full rounded-lg border px-3 py-2 text-sm"
+          style={inputStyle}
+        />
+        {mensajeError}
+        <button
+          type="submit"
+          disabled={enviando}
+          className="w-full rounded-lg py-2.5 font-semibold text-white disabled:opacity-60"
+          style={{ backgroundColor: "var(--color-primary)" }}
+        >
+          {enviando ? "Cambiando..." : "Cambiar contraseña"}
+        </button>
+        <button
+          type="button"
+          onClick={() => pedirCodigo()}
+          disabled={enviando}
+          className="w-full text-xs font-semibold disabled:opacity-60"
+          style={{ color: "var(--color-primary)" }}
+        >
+          {reenviado ? "Código reenviado ✓ — reenviar otra vez" : "¿No te llegó? Reenviar código"}
+        </button>
+        {volver}
+      </form>
+    );
+  }
+
   return (
-    <form onSubmit={manejarSubmit} className="space-y-3">
+    <form onSubmit={pedirCodigo} className="space-y-3">
       <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-        Escribe tu correo y te mandamos un enlace para elegir una nueva contraseña.
+        Escribe tu correo y te mandamos un código para elegir una nueva contraseña.
       </p>
       <input
         type="email"
@@ -205,27 +295,16 @@ function CampoOlvidePassword({ onVolver }) {
         className="w-full rounded-lg border px-3 py-2 text-sm"
         style={inputStyle}
       />
-      {error && (
-        <p className="text-sm" style={{ color: "var(--color-alerta)" }}>
-          {error}
-        </p>
-      )}
+      {mensajeError}
       <button
         type="submit"
         disabled={enviando}
         className="w-full rounded-lg py-2.5 font-semibold text-white disabled:opacity-60"
         style={{ backgroundColor: "var(--color-primary)" }}
       >
-        {enviando ? "Enviando..." : "Mandar enlace"}
+        {enviando ? "Enviando..." : "Mandar código"}
       </button>
-      <button
-        type="button"
-        onClick={onVolver}
-        className="w-full text-sm font-medium text-center"
-        style={{ color: "var(--color-text-muted)" }}
-      >
-        ← Volver a iniciar sesión
-      </button>
+      {volver}
     </form>
   );
 }
