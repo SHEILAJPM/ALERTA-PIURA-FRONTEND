@@ -33,6 +33,7 @@ const LINKS_BASE = [
   { to: "/reportes", label: "Reportes" },
   { to: "/historial", label: "Historial" },
   { to: "/seguro", label: "Seguro" },
+  { to: "/app", label: "Descargar app" },
 ];
 
 const ESTADOS_CONEXION = {

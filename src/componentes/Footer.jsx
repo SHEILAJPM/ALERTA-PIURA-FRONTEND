@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { abrirTourOnboarding } from "./OnboardingTour";
 
 function Footer() {
@@ -15,6 +16,9 @@ function Footer() {
         >
           ¿Cómo funciona esta app?
         </button>
+        <Link to="/app" className="block text-sm text-white/60 hover:text-white transition underline mt-2">
+          Descarga la app en tu celular
+        </Link>
       </div>
     </footer>
   );
