@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Piura Alerta">
+  <circle cx="32" cy="32" r="32" fill="#ffffff"/>
+  <path d="M32 9 L19.88 31 A14 14 0 1 0 44.12 31 Z" fill="#0a2f52"/>
+  <path d="M22.5 40 q4.75 -4 9.5 0 t9.5 0" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M18 54.5 h28" stroke="#b8862e" stroke-width="3" stroke-linecap="round"/>
+</svg>

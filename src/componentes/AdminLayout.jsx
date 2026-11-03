@@ -165,9 +165,7 @@ function AdminLayout() {
           <Icon name="bi-x-lg" aria-hidden="true" />
         </button>
         <div className="flex items-center gap-3 px-2 py-3">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center overflow-hidden shrink-0">
-            <img src="/images/escudo-piura.png" alt="Escudo de Piura" className="w-8 h-8 object-contain" />
-          </div>
+          <img src="/images/logo.svg" alt="" width={40} height={40} className="w-10 h-10 shrink-0" />
           <div className="min-w-0">
             <p className="text-white font-bold leading-tight truncate">Río Piura Alerta</p>
             <span
