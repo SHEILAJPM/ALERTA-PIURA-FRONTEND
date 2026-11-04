@@ -1,5 +1,6 @@
 import { useInstalarApp } from "../ganchos/useInstalarApp";
 import Icon from "../componentes/Icon";
+import QrDescarga from "../componentes/QrDescarga";
 
 const VENTAJAS = [
   {
@@ -104,6 +105,8 @@ function DescargarApp() {
           </div>
         </div>
       </section>
+
+      {!instalada && <QrDescarga />}
 
       <section className="grid gap-5 sm:grid-cols-3 mb-10">
         {VENTAJAS.map(({ icono, titulo, texto }) => (
