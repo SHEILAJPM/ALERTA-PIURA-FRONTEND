@@ -6,6 +6,7 @@ import LevelChart from "../componentes/LevelChart";
 import Skeleton from "../componentes/Skeleton";
 import ErrorBanner from "../componentes/ErrorBanner";
 import ChequeoSeguridad from "../componentes/ChequeoSeguridad";
+import SismosRecientes from "../componentes/SismosRecientes";
 import Icon from "../componentes/Icon";
 import { useUltimaLectura } from "../ganchos/useUltimaLectura";
 import { useSensores } from "../ganchos/useSensores";
@@ -204,6 +205,8 @@ function Home() {
       </section>
 
       <ChequeoSeguridad />
+
+      <SismosRecientes />
 
       <section
         className="mt-8 mb-10 rounded-3xl p-6 border"
