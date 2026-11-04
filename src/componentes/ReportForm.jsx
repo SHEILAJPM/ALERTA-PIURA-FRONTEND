@@ -3,6 +3,16 @@ import { subirFoto } from "../utilidades/cloudinary";
 import { useAuth } from "../contexto/AuthContext";
 import Avatar from "./Avatar";
 import Icon from "./Icon";
+import { useDictado } from "../ganchos/useDictado";
+
+// Agrega lo dictado al final de lo que ya hay, con la primera letra en
+// mayúscula si empieza una oración.
+function unirFrase(actual, frase) {
+  const base = actual.trimEnd();
+  if (!base) return frase.charAt(0).toUpperCase() + frase.slice(1);
+  const nuevaOracion = /[.!?]$/.test(base);
+  return `${base} ${nuevaOracion ? frase.charAt(0).toUpperCase() + frase.slice(1) : frase}`;
+}
 
 const inputStyle = {
   borderColor: "var(--color-border)",
@@ -20,6 +30,11 @@ function ReportForm({ onEnviar, enviando }) {
   const [errorLocal, setErrorLocal] = useState(null);
   const [avisoEncolado, setAvisoEncolado] = useState(false);
   const [avisoArchivado, setAvisoArchivado] = useState(false);
+  const dictado = useDictado((frase) => {
+    setDescripcion((actual) => unirFrase(actual, frase));
+    setAvisoEncolado(false);
+    setAvisoArchivado(false);
+  });
 
   function obtenerUbicacion() {
     if (!navigator.geolocation) {
@@ -54,6 +69,7 @@ function ReportForm({ onEnviar, enviando }) {
 
   async function manejarSubmit(e) {
     e.preventDefault();
+    dictado.detener();
     if (!descripcion.trim()) {
       setErrorLocal("Describe brevemente lo que estás reportando.");
       return;
@@ -111,18 +127,55 @@ function ReportForm({ onEnviar, enviando }) {
         />
       )}
 
-      <textarea
-        placeholder="¿Qué está pasando? (obligatorio)"
-        value={descripcion}
-        onChange={(e) => {
-          setDescripcion(e.target.value);
-          setAvisoEncolado(false);
-          setAvisoArchivado(false);
-        }}
-        rows={3}
-        className="w-full rounded-lg border px-3 py-2 text-sm"
-        style={inputStyle}
-      />
+      <div className="relative">
+        <textarea
+          placeholder={
+            dictado.soportado
+              ? "¿Qué está pasando? Escribe o toca el micrófono para dictar (obligatorio)"
+              : "¿Qué está pasando? (obligatorio)"
+          }
+          value={
+            dictado.escuchando && dictado.parcial ? unirFrase(descripcion, dictado.parcial) : descripcion
+          }
+          onChange={(e) => {
+            setDescripcion(e.target.value);
+            setAvisoEncolado(false);
+            setAvisoArchivado(false);
+          }}
+          readOnly={dictado.escuchando}
+          rows={3}
+          className={`w-full rounded-lg border px-3 py-2 text-sm ${dictado.soportado ? "pr-12" : ""}`}
+          style={inputStyle}
+        />
+        {dictado.soportado && (
+          <button
+            type="button"
+            onClick={dictado.escuchando ? dictado.detener : dictado.iniciar}
+            aria-label={dictado.escuchando ? "Detener dictado" : "Dictar por voz"}
+            aria-pressed={dictado.escuchando}
+            className={`absolute right-2 top-2 w-9 h-9 rounded-full flex items-center justify-center ${
+              dictado.escuchando ? "animate-pulse text-white" : ""
+            }`}
+            style={
+              dictado.escuchando
+                ? { backgroundColor: "var(--color-alerta)" }
+                : { backgroundColor: "var(--color-primary-soft)", color: "var(--color-primary)" }
+            }
+          >
+            <Icon name={dictado.escuchando ? "bi-mic-fill" : "bi-mic"} aria-hidden="true" />
+          </button>
+        )}
+      </div>
+      {dictado.escuchando && (
+        <p className="text-xs -mt-1" style={{ color: "var(--color-alerta)" }} role="status">
+          Escuchando... habla y toca el micrófono otra vez para terminar.
+        </p>
+      )}
+      {dictado.error && (
+        <p className="text-xs -mt-1" style={{ color: "var(--color-alerta)" }}>
+          {dictado.error}
+        </p>
+      )}
 
       {foto?.previsualizacion && (
         <div className="relative">
