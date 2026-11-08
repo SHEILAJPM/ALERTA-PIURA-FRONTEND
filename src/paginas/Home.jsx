@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { Suspense, useState } from "react";
 import RiverStatus from "../componentes/RiverStatus";
 import KpiCard, { KpiCardSkeleton } from "../componentes/KpiCard";
 import AlertCard from "../componentes/AlertCard";
@@ -15,6 +15,9 @@ import { usePronosticoLluvia } from "../ganchos/usePronosticoLluvia";
 import { recommendations } from "../datos/content";
 import { formatearHora } from "../utilidades/fecha";
 import { SENSOR_POR_DEFECTO } from "../constantes/sensores";
+
+// Lazy: el radar usa Leaflet (pesado) y el resto de Inicio no lo necesita.
+const RadarLluvia = React.lazy(() => import("../componentes/RadarLluvia"));
 
 const CLAVE_SENSOR_GUARDADO = "piura-alerta-sensor";
 
@@ -205,6 +208,10 @@ function Home() {
       </section>
 
       <ChequeoSeguridad />
+
+      <Suspense fallback={<Skeleton className="mt-8 h-120 rounded-3xl" />}>
+        <RadarLluvia />
+      </Suspense>
 
       <SismosRecientes />
 
