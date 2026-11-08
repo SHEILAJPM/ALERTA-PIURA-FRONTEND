@@ -12,7 +12,10 @@ self.addEventListener("push", (event) => {
     datos = { cuerpo: event.data ? event.data.text() : "" };
   }
 
-  const esAlertaRoja = datos.estado === "alerta_roja";
+  // El simulacro (ver backend servicios/simulacro.js) se comporta como una
+  // alerta roja a propósito: es justamente lo que se está ensayando.
+  const esAlertaRoja = datos.estado === "alerta_roja" || datos.estado === "simulacro";
+  const TAGS = { recordatorio: "piura-alerta-recordatorio", simulacro: "piura-alerta-simulacro" };
   event.waitUntil(
     self.registration.showNotification(datos.titulo || "Piura Alerta", {
       body: datos.cuerpo || "Hay una actualización del estado del río.",
@@ -20,7 +23,7 @@ self.addEventListener("push", (event) => {
       badge: ICONO,
       // Un solo aviso de estado visible a la vez: el nuevo reemplaza al
       // anterior en vez de apilar "prealerta, normal, prealerta..."
-      tag: datos.estado === "recordatorio" ? "piura-alerta-recordatorio" : "piura-alerta-estado",
+      tag: TAGS[datos.estado] ?? "piura-alerta-estado",
       renotify: true,
       requireInteraction: esAlertaRoja,
       vibrate: esAlertaRoja ? [400, 150, 400, 150, 400] : [200],
