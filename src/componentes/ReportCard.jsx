@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../contexto/AuthContext";
 import Avatar from "./Avatar";
 import Icon from "./Icon";
+import { SelloVerificadoIA } from "./CalificacionIA";
 import { formatearDistancia } from "../utilidades/geo";
 import { formatearTiempoRelativo } from "../utilidades/fecha";
 
@@ -83,6 +84,11 @@ function ReportCard({ reporte, onLike, onConfirmar, distanciaKm }) {
               {aviso.text}
             </p>
           )}
+          {reporte.veredicto_ia === "apto" && (
+            <div className="mt-1">
+              <SelloVerificadoIA veredicto={reporte.veredicto_ia} puntaje={reporte.puntaje_ia} />
+            </div>
+          )}
         </div>
       </header>
 
@@ -92,7 +98,10 @@ function ReportCard({ reporte, onLike, onConfirmar, distanciaKm }) {
           style={{ backgroundColor: "var(--color-surface-alt)", color: "var(--color-text-muted)" }}
           title={reporte.motivo_ia ?? undefined}
         >
-          <Icon name="bi-robot" aria-hidden="true" /> Posible spam — revisa igual, la IA puede equivocarse
+          <Icon name="bi-robot" aria-hidden="true" />{" "}
+          {reporte.veredicto_ia === "revisar"
+            ? "La IA tiene dudas sobre esta publicación: un moderador la revisará"
+            : "Posible spam — revisa igual, la IA puede equivocarse"}
         </p>
       )}
 
