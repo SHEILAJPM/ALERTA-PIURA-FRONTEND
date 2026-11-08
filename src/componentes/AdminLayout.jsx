@@ -41,6 +41,7 @@ const GRUPOS = [
     roles: ROLES_DEFENSA_CIVIL,
     items: [
       { to: "/admin/despacho", label: "Consola de Despacho", icon: "bi-broadcast" },
+      { to: "/admin/simulacro", label: "Simulacro en Vivo", icon: "bi-megaphone" },
       { to: "/admin/albergues", label: "Albergues: Inventario y Aforo", icon: "bi-house-door" },
       { to: "/admin/reportes", label: "Moderación de Publicaciones", icon: "bi-clipboard-check" },
       { to: "/admin/chequeos-seguridad", label: "Chequeos de Seguridad", icon: "bi-person-badge" },
