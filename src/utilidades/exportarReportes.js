@@ -2,6 +2,7 @@ import { exportarCSV, exportarPDF } from "./exportar";
 import { formatearFechaHoraCompleta } from "./fecha";
 
 const ESTADO = { pendiente: "Pendiente", verificado: "Verificado", descartado: "Archivado" };
+const VEREDICTO = { apto: "Apta", revisar: "Revisar", no_apto: "No apta" };
 
 const COLUMNAS = [
   { titulo: "Fecha", valor: (r) => formatearFechaHoraCompleta(r.creado_en) },
@@ -11,6 +12,8 @@ const COLUMNAS = [
   { titulo: "Me gusta", valor: (r) => r.likes_count ?? 0 },
   { titulo: "Confirmaciones", valor: (r) => r.confirmaciones_count ?? 0 },
   { titulo: "Posible spam (IA)", valor: (r) => (r.posible_spam ? "Sí" : "No") },
+  { titulo: "Calificación IA", valor: (r) => VEREDICTO[r.veredicto_ia] ?? "Sin analizar" },
+  { titulo: "Puntaje IA", valor: (r) => r.puntaje_ia ?? "" },
   {
     titulo: "Ubicación (lat, lon)",
     valor: (r) => {

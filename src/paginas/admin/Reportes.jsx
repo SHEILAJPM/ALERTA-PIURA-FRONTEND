@@ -8,6 +8,12 @@ import Icon from "../../componentes/Icon";
 import { exportarReportesCSV, exportarReportesPDF } from "../../utilidades/exportarReportes";
 import { formatearFechaHora as formatearFecha } from "../../utilidades/fecha";
 import { ROLES_ADMINISTRADOR } from "../../constantes/roles";
+import { CalificacionIADetalle } from "../../componentes/CalificacionIA";
+
+function ordenIA(reporte) {
+  if (typeof reporte.puntaje_ia === "number") return reporte.puntaje_ia;
+  return reporte.posible_spam === true ? 0 : 50;
+}
 
 const ESTADO_LABEL = {
   pendiente: {
@@ -108,15 +114,25 @@ const ReporteModeracion = React.memo(function ReporteModeracion({ reporte, proce
         </span>
       </div>
 
-      {reporte.posible_spam === true && (
-        <p
-          className="mt-2 text-xs font-medium rounded-lg px-3 py-1.5 inline-block"
-          style={{ backgroundColor: "var(--color-surface-alt)", color: "var(--color-text-muted)" }}
-          title={reporte.motivo_ia ?? undefined}
-        >
-          <Icon name="bi-robot" aria-hidden="true" /> Posible spam
-          {reporte.motivo_ia ? `: ${reporte.motivo_ia}` : ""} — revisa igual, la IA puede equivocarse
-        </p>
+      {reporte.veredicto_ia ? (
+        <CalificacionIADetalle
+          className="mt-3"
+          veredicto={reporte.veredicto_ia}
+          puntaje={reporte.puntaje_ia}
+          motivo={reporte.motivo_ia}
+          detalle={reporte.detalle_ia}
+        />
+      ) : (
+        reporte.posible_spam === true && (
+          <p
+            className="mt-2 text-xs font-medium rounded-lg px-3 py-1.5 inline-block"
+            style={{ backgroundColor: "var(--color-surface-alt)", color: "var(--color-text-muted)" }}
+            title={reporte.motivo_ia ?? undefined}
+          >
+            <Icon name="bi-robot" aria-hidden="true" /> Posible spam
+            {reporte.motivo_ia ? `: ${reporte.motivo_ia}` : ""} — revisa igual, la IA puede equivocarse
+          </p>
+        )
       )}
 
       <p className="mt-3 text-sm" style={{ color: "var(--color-text)" }}>
@@ -171,11 +187,11 @@ function ModeracionReportes() {
   // estar vacías — el archivo completo queda para Administrador.
   const esAdministrador = ROLES_ADMINISTRADOR.includes(usuario?.rol);
 
-  // Los marcados como posible spam se quedan al final (no se ocultan: la IA
-  // puede equivocarse), así los reportes probablemente reales aparecen primero.
-  const pendientes = reportes
-    .filter((r) => r.estado === "pendiente")
-    .sort((a, b) => (a.posible_spam === true ? 1 : 0) - (b.posible_spam === true ? 1 : 0));
+  // Ordenados por el puntaje de la IA, los más confiables primero (no se
+  // oculta ninguno: la IA puede equivocarse). Los que no tienen puntaje
+  // (reportes viejos o sin análisis) van al medio, y los marcados como
+  // posible spam con el criterio anterior, al final.
+  const pendientes = reportes.filter((r) => r.estado === "pendiente").sort((a, b) => ordenIA(b) - ordenIA(a));
   const verificadosList = reportes.filter((r) => r.estado === "verificado");
   const archivadosList = reportes.filter((r) => r.estado === "descartado");
   const verificados = verificadosList.length;
