@@ -4,6 +4,7 @@ import { useAuth } from "../contexto/AuthContext";
 import Avatar from "./Avatar";
 import Icon from "./Icon";
 import { useDictado } from "../ganchos/useDictado";
+import { CalificacionIADetalle } from "./CalificacionIA";
 
 // Agrega lo dictado al final de lo que ya hay, con la primera letra en
 // mayúscula si empieza una oración.
@@ -30,10 +31,12 @@ function ReportForm({ onEnviar, enviando }) {
   const [errorLocal, setErrorLocal] = useState(null);
   const [avisoEncolado, setAvisoEncolado] = useState(false);
   const [avisoArchivado, setAvisoArchivado] = useState(false);
+  const [calificacion, setCalificacion] = useState(null);
   const dictado = useDictado((frase) => {
     setDescripcion((actual) => unirFrase(actual, frase));
     setAvisoEncolado(false);
     setAvisoArchivado(false);
+    setCalificacion(null);
   });
 
   function obtenerUbicacion() {
@@ -96,6 +99,7 @@ function ReportForm({ onEnviar, enviando }) {
       setErrorLocal(null);
       setAvisoEncolado(resultado?.encolado === true);
       setAvisoArchivado(resultado?.archivado === true);
+      setCalificacion(resultado?.calificacion ?? null);
     } catch (err) {
       setErrorLocal(err.message);
     }
@@ -141,6 +145,7 @@ function ReportForm({ onEnviar, enviando }) {
             setDescripcion(e.target.value);
             setAvisoEncolado(false);
             setAvisoArchivado(false);
+            setCalificacion(null);
           }}
           readOnly={dictado.escuchando}
           rows={3}
@@ -237,6 +242,22 @@ function ReportForm({ onEnviar, enviando }) {
         </p>
       )}
 
+      {calificacion && (
+        <div role="status">
+          {calificacion.veredicto === "apto" && (
+            <p className="text-sm font-semibold mb-2" style={{ color: "var(--color-normal)" }}>
+              ¡Publicado! La IA revisó tu foto y tu descripción:
+            </p>
+          )}
+          {calificacion.veredicto === "revisar" && (
+            <p className="text-sm font-semibold mb-2" style={{ color: "var(--color-prealerta)" }}>
+              Recibido. Un moderador la revisará antes de publicarla:
+            </p>
+          )}
+          <CalificacionIADetalle {...calificacion} />
+        </div>
+      )}
+
       {errorLocal && (
         <p className="text-sm" style={{ color: "var(--color-alerta)" }}>
           {errorLocal}
@@ -249,7 +270,7 @@ function ReportForm({ onEnviar, enviando }) {
         className="w-full rounded-lg py-2.5 font-semibold text-white disabled:opacity-60"
         style={{ backgroundColor: "var(--color-primary)" }}
       >
-        {enviando ? "Enviando..." : "Enviar reporte"}
+        {enviando ? "La IA está revisando tu publicación..." : "Enviar reporte"}
       </button>
     </form>
   );

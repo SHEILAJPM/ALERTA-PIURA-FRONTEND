@@ -137,11 +137,20 @@ export function useReportes(limite = 30, { soloMios = false, incluirArchivados =
     setEnviando(true);
     try {
       const reporte = await crearReporte(datos);
-      // Archivado por la IA (ver moderacionIA.js en el backend): no entra al
-      // feed, y el formulario le explica a la persona por qué.
-      if (reporte.estado === "descartado") return { archivado: true };
+      // La calificación de la IA (ver moderacionIA.js en el backend) se le
+      // muestra a quien publicó, apta o no.
+      const calificacion = reporte.veredicto_ia
+        ? {
+            veredicto: reporte.veredicto_ia,
+            puntaje: reporte.puntaje_ia,
+            motivo: reporte.motivo_ia,
+            detalle: reporte.detalle_ia,
+          }
+        : null;
+      // Archivado por la IA: no entra al feed, y el formulario explica por qué.
+      if (reporte.estado === "descartado") return { archivado: true, calificacion };
       setData((prev) => (prev?.some((r) => r.id === reporte.id) ? prev : [reporte, ...(prev ?? [])]));
-      return { reporte };
+      return { reporte, calificacion };
     } catch (err) {
       if (!esFallaDeConexion(err)) throw err;
       guardarCola([...leerCola(), datos]);
