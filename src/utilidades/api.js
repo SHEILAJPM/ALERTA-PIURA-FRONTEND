@@ -264,6 +264,24 @@ export function actualizarConfiguracion(cambios) {
   return enviar("/api/configuracion", "PATCH", cambios);
 }
 
+// --- Simulacro en vivo --------------------------------------------------------
+
+export function getSimulacro() {
+  return apiFetch("/api/simulacro");
+}
+
+export function iniciarSimulacro({ minutos, mensaje, conPush }) {
+  return enviar("/api/simulacro/iniciar", "POST", {
+    minutos,
+    mensaje: mensaje?.trim() || undefined,
+    con_push: conPush,
+  });
+}
+
+export function detenerSimulacro() {
+  return enviar("/api/simulacro/detener", "POST");
+}
+
 // --- Seguro ----------------------------------------------------------------
 
 export function getPlanesSeguro() {

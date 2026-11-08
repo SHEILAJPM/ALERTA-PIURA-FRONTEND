@@ -156,3 +156,41 @@ html {
 .mapa-invertido .leaflet-tile-pane {
   filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
 }
+
+/* Pantalla del simulacro (ver SimulacroAlerta.jsx): fondo rojo que late como
+   sirena. Con "reducir movimiento" queda fijo, el aviso igual es inconfundible. */
+.simulacro-fondo {
+  background: radial-gradient(circle at center, #dc2626 0%, #991b1b 60%, #450a0a 100%);
+  animation: simulacro-sirena 1.2s ease-in-out infinite;
+}
+
+.simulacro-latido {
+  animation: simulacro-latido 1.2s ease-in-out infinite;
+}
+
+@keyframes simulacro-sirena {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.25);
+  }
+}
+
+@keyframes simulacro-latido {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .simulacro-fondo,
+  .simulacro-latido {
+    animation: none;
+  }
+}

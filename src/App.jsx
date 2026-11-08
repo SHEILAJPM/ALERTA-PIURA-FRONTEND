@@ -7,6 +7,7 @@ import Layout from "./componentes/Layout";
 import AdminLayout from "./componentes/AdminLayout";
 import AuthModal from "./componentes/AuthModal";
 import InvitacionSesion from "./componentes/InvitacionSesion";
+import SimulacroAlerta from "./componentes/SimulacroAlerta";
 import ProtectedRoute from "./componentes/ProtectedRoute";
 import Home from "./paginas/Home";
 import MiPerfil from "./paginas/MiPerfil";
@@ -39,6 +40,7 @@ const AsistenteFeedback = React.lazy(() => import("./paginas/admin/AsistenteFeed
 const Impacto = React.lazy(() => import("./paginas/admin/Impacto"));
 const ChequeosSeguridad = React.lazy(() => import("./paginas/admin/ChequeosSeguridad"));
 const Configuracion = React.lazy(() => import("./paginas/admin/Configuracion"));
+const Simulacro = React.lazy(() => import("./paginas/admin/Simulacro"));
 
 function conSuspenso(elemento) {
   return <Suspense fallback={<div className="p-8 h-150" />}>{elemento}</Suspense>;
@@ -94,11 +96,13 @@ function App() {
                   <Route path="impacto" element={conSuspenso(<Impacto />)} />
                   <Route path="chequeos-seguridad" element={conSuspenso(<ChequeosSeguridad />)} />
                   <Route path="configuracion" element={conSuspenso(<Configuracion />)} />
+                  <Route path="simulacro" element={conSuspenso(<Simulacro />)} />
                 </Route>
               </Route>
             </Routes>
             <AuthModal />
             <InvitacionSesion />
+            <SimulacroAlerta />
           </BrowserRouter>
         </AuthProvider>
       </WebSocketProvider>
