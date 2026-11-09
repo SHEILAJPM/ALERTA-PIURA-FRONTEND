@@ -130,7 +130,7 @@ Para generar el APK (requiere Android Studio instalado):
    en tu PC, usa la IP de `ipconfig`; el celular tiene que estar en la misma red WiFi.
 2. En PowerShell, apunta `JAVA_HOME` al JDK de Android Studio (Gradle no soporta Java 26):
    `$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"`
-3. `npm run android:apk`. El APK queda en `android/app/build/outputs/apk/debug/app-debug.apk`.
+3. `npm run android:apk`. El APK queda en `public/PiuraAlerta.apk`, así que la web lo sirve en `/PiuraAlerta.apk` (botón y QR de la página `/app`).
 
 Para probar la pantalla de acceso en el navegador sin compilar: `VITE_EXIGIR_SESION=true npm run dev`.
 

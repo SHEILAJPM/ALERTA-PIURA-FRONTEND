@@ -3,11 +3,9 @@ import Icon from "../componentes/Icon";
 import QrDescarga from "../componentes/QrDescarga";
 import { esAppNativa } from "../utilidades/plataforma";
 
-// APK de la app Android (Capacitor, carpeta android/), publicado en GitHub
-// Releases: "latest/download" siempre apunta a la última versión subida.
-const URL_APK =
-  import.meta.env.VITE_APK_URL ??
-  "https://github.com/SHEILAJPM/ALERTA-PIURA-FRONTEND/releases/latest/download/PiuraAlerta.apk";
+// APK de la app Android (Capacitor, carpeta android/), servido por este mismo
+// frontend desde public/PiuraAlerta.apk: se descarga desde la misma página.
+const URL_APK = import.meta.env.VITE_APK_URL ?? "/PiuraAlerta.apk";
 
 const VENTAJAS = [
   {
@@ -96,6 +94,7 @@ function DescargarApp() {
             {!instalada && !esIOS && (
               <a
                 href={URL_APK}
+                download="PiuraAlerta.apk"
                 className="inline-flex items-center gap-2 rounded-lg px-5 py-3 font-semibold text-white"
                 style={{ backgroundColor: "var(--color-primary)" }}
               >
@@ -132,7 +131,7 @@ function DescargarApp() {
 
       {!instalada && (
         <QrDescarga
-          url={URL_APK}
+          url={new URL(URL_APK, window.location.origin).href}
           titulo="Escanea y descarga la app"
           texto="Apunta la cámara del celular (Android) a este código: se descarga la app Piura Alerta para instalarla."
         />
