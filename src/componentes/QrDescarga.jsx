@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import Icon from "./Icon";
 
-// QR que apunta a esta misma página: desde la PC se escanea con el celular y
-// se abre directo la página de instalación, sin tipear la URL. Se genera en
+// QR para pasar del proyector o la PC al celular sin tipear la URL (por
+// defecto, el APK de la app Android: escanearlo ya lo descarga). Se genera en
 // el navegador (sin servicios externos) y la librería se carga recién acá
 // para no sumar peso al resto de la app.
-function QrDescarga() {
+function QrDescarga({ url, titulo, texto }) {
   const [imagen, setImagen] = useState(null);
-  const url = `${window.location.origin}/app`;
 
   useEffect(() => {
     let vigente = true;
@@ -31,7 +30,7 @@ function QrDescarga() {
 
   return (
     <div
-      className="hidden sm:flex items-center gap-5 rounded-2xl border p-5 mb-10"
+      className="flex flex-col sm:flex-row sm:items-center gap-5 rounded-2xl border p-5 mb-10"
       style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
     >
       <img
@@ -44,11 +43,10 @@ function QrDescarga() {
       <div>
         <p className="font-bold flex items-center gap-2">
           <Icon name="bi-qr-code" aria-hidden="true" style={{ color: "var(--color-primary)" }} />
-          ¿Estás en la computadora?
+          {titulo}
         </p>
         <p className="text-sm mt-1 max-w-md" style={{ color: "var(--color-text-muted)" }}>
-          Escanea este código con la cámara de tu celular para abrir esta página ahí e instalar la app en
-          segundos.
+          {texto}
         </p>
         <p className="text-xs mt-2 font-mono break-all" style={{ color: "var(--color-text-muted)" }}>
           {url}
