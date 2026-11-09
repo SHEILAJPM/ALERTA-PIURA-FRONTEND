@@ -70,7 +70,7 @@ function CampoCodigo2FA({ referencia, onExito }) {
   );
 }
 
-function CampoLogin({ onExito, onOlvideContrasena, onPaso2FA }) {
+export function CampoLogin({ onExito, onOlvideContrasena, onPaso2FA }) {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [correo, setCorreo] = useState("");
@@ -154,7 +154,7 @@ function CampoLogin({ onExito, onOlvideContrasena, onPaso2FA }) {
 
 // Recuperación en dos pasos dentro del mismo modal: primero el correo, después
 // el código de 6 dígitos que llega ahí junto con la contraseña nueva.
-function CampoOlvidePassword({ onVolver }) {
+export function CampoOlvidePassword({ onVolver }) {
   const [paso, setPaso] = useState("correo"); // "correo" | "codigo" | "listo"
   const [correo, setCorreo] = useState("");
   const [codigo, setCodigo] = useState("");
@@ -309,7 +309,7 @@ function CampoOlvidePassword({ onVolver }) {
   );
 }
 
-function CampoRegistro({ onExito }) {
+export function CampoRegistro({ onExito }) {
   const { registro } = useAuth();
   const [form, setForm] = useState({ nombre: "", dni: "", telefono: "", correo: "", password: "" });
   const [datosOpcionales, setDatosOpcionales] = useState({ direccion: "", recibirSMS: false });
