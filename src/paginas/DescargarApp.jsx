@@ -61,6 +61,10 @@ function ListaPasos({ titulo, pasos, destacada }) {
   );
 }
 
+// En Android se ofrece solo el APK: la versión web instalada desde Chrome
+// queda como un acceso directo con el logo del navegador encima del ícono.
+const esAndroid = typeof navigator !== "undefined" && /android/i.test(navigator.userAgent);
+
 function DescargarApp() {
   const { puedeInstalar, instalada: pwaInstalada, esIOS, instalar } = useInstalarApp();
   // Dentro de la app Android no tiene sentido ofrecer descargarla de nuevo.
@@ -107,7 +111,7 @@ function DescargarApp() {
                 <Icon name="bi-check-circle-fill" aria-hidden="true" />
                 Ya tienes la app instalada
               </p>
-            ) : puedeInstalar ? (
+            ) : puedeInstalar && !esAndroid ? (
               <button
                 type="button"
                 onClick={instalar}
