@@ -7,7 +7,11 @@ import Layout from "./componentes/Layout";
 import AdminLayout from "./componentes/AdminLayout";
 import AuthModal from "./componentes/AuthModal";
 import InvitacionSesion from "./componentes/InvitacionSesion";
+import SimulacroAlerta from "./componentes/SimulacroAlerta";
 import ProtectedRoute from "./componentes/ProtectedRoute";
+import PuertaSesion from "./componentes/PuertaSesion";
+import NotificacionesNativas from "./componentes/NotificacionesNativas";
+import { esAppNativa } from "./utilidades/plataforma";
 import Home from "./paginas/Home";
 import MiPerfil from "./paginas/MiPerfil";
 import VerificarCorreo from "./paginas/VerificarCorreo";
@@ -39,6 +43,7 @@ const AsistenteFeedback = React.lazy(() => import("./paginas/admin/AsistenteFeed
 const Impacto = React.lazy(() => import("./paginas/admin/Impacto"));
 const ChequeosSeguridad = React.lazy(() => import("./paginas/admin/ChequeosSeguridad"));
 const Configuracion = React.lazy(() => import("./paginas/admin/Configuracion"));
+const Simulacro = React.lazy(() => import("./paginas/admin/Simulacro"));
 
 function conSuspenso(elemento) {
   return <Suspense fallback={<div className="p-8 h-150" />}>{elemento}</Suspense>;
@@ -49,56 +54,61 @@ function App() {
     <ThemeProvider>
       <WebSocketProvider>
         <AuthProvider>
+          {esAppNativa && <NotificacionesNativas />}
           <BrowserRouter>
-            <Routes>
-              <Route element={<Layout />}>
-                <Route path="/" element={<Home />} />
-                <Route
-                  path="/mapa"
-                  element={
-                    <Suspense
-                      fallback={<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-150" />}
-                    >
-                      <Mapa />
-                    </Suspense>
-                  }
-                />
-                <Route path="/reportes" element={conSuspenso(<Reportes />)} />
-                <Route path="/historial" element={conSuspenso(<Historial />)} />
-                <Route path="/restablecer-password" element={<Navigate to="/" replace />} />
-                <Route path="/verificar-correo" element={<VerificarCorreo />} />
-                <Route path="/seguro" element={<Seguro />} />
-                <Route path="/app" element={<DescargarApp />} />
-                <Route element={<ProtectedRoute />}>
-                  <Route path="/perfil" element={<MiPerfil />} />
-                  <Route path="/mi-poliza" element={<MiPoliza />} />
-                  <Route path="/mis-reportes" element={conSuspenso(<MisReportes />)} />
+            <PuertaSesion>
+              <Routes>
+                <Route element={<Layout />}>
+                  <Route path="/" element={<Home />} />
+                  <Route
+                    path="/mapa"
+                    element={
+                      <Suspense
+                        fallback={<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-150" />}
+                      >
+                        <Mapa />
+                      </Suspense>
+                    }
+                  />
+                  <Route path="/reportes" element={conSuspenso(<Reportes />)} />
+                  <Route path="/historial" element={conSuspenso(<Historial />)} />
+                  <Route path="/restablecer-password" element={<Navigate to="/" replace />} />
+                  <Route path="/verificar-correo" element={<VerificarCorreo />} />
+                  <Route path="/seguro" element={<Seguro />} />
+                  <Route path="/app" element={<DescargarApp />} />
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/perfil" element={<MiPerfil />} />
+                    <Route path="/mi-poliza" element={<MiPoliza />} />
+                    <Route path="/mis-reportes" element={conSuspenso(<MisReportes />)} />
+                  </Route>
                 </Route>
-              </Route>
 
-              <Route element={<ProtectedRoute roles={ROLES_PANEL_ADMIN} />}>
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<Navigate to="reportes" replace />} />
-                  <Route path="reportes" element={conSuspenso(<ModeracionReportes />)} />
-                  <Route path="albergues" element={conSuspenso(<AdminAlbergues />)} />
-                  <Route path="sensores" element={conSuspenso(<CatalogoNodos />)} />
-                  <Route path="telemetria" element={conSuspenso(<Telemetria />)} />
-                  <Route path="calibracion" element={conSuspenso(<Calibracion />)} />
-                  <Route path="usuarios" element={conSuspenso(<Usuarios />)} />
-                  <Route path="auditoria" element={conSuspenso(<Auditoria />)} />
-                  <Route path="tickets" element={conSuspenso(<Tickets />)} />
-                  <Route path="despacho" element={conSuspenso(<Despacho />)} />
-                  <Route path="polizas" element={conSuspenso(<Polizas />)} />
-                  <Route path="reclamos-seguro" element={conSuspenso(<ReclamosSeguro />)} />
-                  <Route path="asistente" element={conSuspenso(<AsistenteFeedback />)} />
-                  <Route path="impacto" element={conSuspenso(<Impacto />)} />
-                  <Route path="chequeos-seguridad" element={conSuspenso(<ChequeosSeguridad />)} />
-                  <Route path="configuracion" element={conSuspenso(<Configuracion />)} />
+                <Route element={<ProtectedRoute roles={ROLES_PANEL_ADMIN} />}>
+                  <Route path="/admin" element={<AdminLayout />}>
+                    <Route index element={<Navigate to="reportes" replace />} />
+                    <Route path="reportes" element={conSuspenso(<ModeracionReportes />)} />
+                    <Route path="albergues" element={conSuspenso(<AdminAlbergues />)} />
+                    <Route path="sensores" element={conSuspenso(<CatalogoNodos />)} />
+                    <Route path="telemetria" element={conSuspenso(<Telemetria />)} />
+                    <Route path="calibracion" element={conSuspenso(<Calibracion />)} />
+                    <Route path="usuarios" element={conSuspenso(<Usuarios />)} />
+                    <Route path="auditoria" element={conSuspenso(<Auditoria />)} />
+                    <Route path="tickets" element={conSuspenso(<Tickets />)} />
+                    <Route path="despacho" element={conSuspenso(<Despacho />)} />
+                    <Route path="polizas" element={conSuspenso(<Polizas />)} />
+                    <Route path="reclamos-seguro" element={conSuspenso(<ReclamosSeguro />)} />
+                    <Route path="asistente" element={conSuspenso(<AsistenteFeedback />)} />
+                    <Route path="impacto" element={conSuspenso(<Impacto />)} />
+                    <Route path="chequeos-seguridad" element={conSuspenso(<ChequeosSeguridad />)} />
+                    <Route path="configuracion" element={conSuspenso(<Configuracion />)} />
+                    <Route path="simulacro" element={conSuspenso(<Simulacro />)} />
+                  </Route>
                 </Route>
-              </Route>
-            </Routes>
-            <AuthModal />
-            <InvitacionSesion />
+              </Routes>
+              <AuthModal />
+              <InvitacionSesion />
+              <SimulacroAlerta />
+            </PuertaSesion>
           </BrowserRouter>
         </AuthProvider>
       </WebSocketProvider>

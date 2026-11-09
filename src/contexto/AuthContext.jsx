@@ -65,6 +65,7 @@ export function AuthProvider({ children }) {
     if (respuesta.requiere_2fa) return respuesta;
     setSesion({ token: respuesta.token, usuario: respuesta.usuario });
     setModal(null);
+    setSesionExpirada(false);
     return respuesta.usuario;
   }
 
@@ -72,6 +73,7 @@ export function AuthProvider({ children }) {
     const { token, usuario } = await verificarCodigo2FA({ referencia, codigo });
     setSesion({ token, usuario });
     setModal(null);
+    setSesionExpirada(false);
     return usuario;
   }
 
@@ -79,6 +81,7 @@ export function AuthProvider({ children }) {
     const { token, usuario } = await registrarUsuario(datos);
     setSesion({ token, usuario });
     setModal(null);
+    setSesionExpirada(false);
   }
 
   function logout() {

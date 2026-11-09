@@ -115,6 +115,25 @@ Overpass/OpenStreetMap (hospitales, comisarías y bomberos en el mapa).
 Ver [`DEPLOY.md`](DEPLOY.md) para la guía completa (Render como sitio estático, cuenta de
 Cloudinary y variables de entorno de producción).
 
+## 📱 App Android
+
+La misma web empaquetada como app con [Capacitor](https://capacitorjs.com) (carpeta `android/`).
+Diferencias con la web:
+
+- Hay que **iniciar sesión o registrarse** antes de entrar (`src/componentes/PuertaSesion.jsx`).
+- Cada prealerta, alerta roja o simulacro que llega por WebSocket se muestra como
+  **notificación de Android**, con la app abierta o minimizada (`src/componentes/NotificacionesNativas.jsx`).
+
+Para generar el APK (requiere Android Studio instalado):
+
+1. Copia `.env.android.example` como `.env.android` y pon la URL del backend. Si el backend corre
+   en tu PC, usa la IP de `ipconfig`; el celular tiene que estar en la misma red WiFi.
+2. En PowerShell, apunta `JAVA_HOME` al JDK de Android Studio (Gradle no soporta Java 26):
+   `$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"`
+3. `npm run android:apk`. El APK queda en `public/PiuraAlerta.apk`, así que la web lo sirve en `/PiuraAlerta.apk` (botón y QR de la página `/app`).
+
+Para probar la pantalla de acceso en el navegador sin compilar: `VITE_EXIGIR_SESION=true npm run dev`.
+
 ## 📊 Funcionalidades principales
 
 - Dashboard de monitoreo.

@@ -1,11 +1,17 @@
 import { useInstalarApp } from "../ganchos/useInstalarApp";
 import Icon from "../componentes/Icon";
+import QrDescarga from "../componentes/QrDescarga";
+import { esAppNativa } from "../utilidades/plataforma";
+
+// APK de la app Android (Capacitor, carpeta android/), servido por este mismo
+// frontend desde public/PiuraAlerta.apk: se descarga desde la misma página.
+const URL_APK = import.meta.env.VITE_APK_URL ?? "/PiuraAlerta.apk";
 
 const VENTAJAS = [
   {
     icono: "bi-bell-fill",
     titulo: "Alertas al instante",
-    texto: "Recibe un aviso en el celular apenas el río cambia de estado, aunque no tengas la app abierta.",
+    texto: "Recibe una notificación en el celular apenas el río cambia de estado o empieza un simulacro.",
   },
   {
     icono: "bi-water",
@@ -22,9 +28,10 @@ const VENTAJAS = [
 ];
 
 const PASOS_ANDROID = [
-  "Abre esta página en Chrome.",
-  "Toca el menú ⋮ (arriba a la derecha).",
-  "Elige “Instalar aplicación” o “Agregar a pantalla principal”.",
+  "Toca “Descargar app para Android” (o escanea el código QR).",
+  "Abre el archivo PiuraAlerta.apk que se descargó.",
+  "Si Android lo pide, permite “instalar apps de origen desconocido” y toca Instalar.",
+  "Abre la app, crea tu cuenta y permite las notificaciones.",
 ];
 
 const PASOS_IPHONE = [
@@ -52,8 +59,14 @@ function ListaPasos({ titulo, pasos, destacada }) {
   );
 }
 
+// En Android se ofrece solo el APK: la versión web instalada desde Chrome
+// queda como un acceso directo con el logo del navegador encima del ícono.
+const esAndroid = typeof navigator !== "undefined" && /android/i.test(navigator.userAgent);
+
 function DescargarApp() {
-  const { puedeInstalar, instalada, esIOS, instalar } = useInstalarApp();
+  const { puedeInstalar, instalada: pwaInstalada, esIOS, instalar } = useInstalarApp();
+  // Dentro de la app Android no tiene sentido ofrecer descargarla de nuevo.
+  const instalada = pwaInstalada || esAppNativa;
 
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -77,7 +90,18 @@ function DescargarApp() {
             Gratis, sin pasar por la tienda de apps y sin ocupar casi espacio. Se actualiza sola.
           </p>
 
-          <div className="mt-5">
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            {!instalada && !esIOS && (
+              <a
+                href={URL_APK}
+                download="PiuraAlerta.apk"
+                className="inline-flex items-center gap-2 rounded-lg px-5 py-3 font-semibold text-white"
+                style={{ backgroundColor: "var(--color-primary)" }}
+              >
+                <Icon name="bi-download" aria-hidden="true" />
+                Descargar app para Android
+              </a>
+            )}
             {instalada ? (
               <p
                 className="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 font-semibold"
@@ -86,24 +110,32 @@ function DescargarApp() {
                 <Icon name="bi-check-circle-fill" aria-hidden="true" />
                 Ya tienes la app instalada
               </p>
-            ) : puedeInstalar ? (
+            ) : puedeInstalar && !esAndroid ? (
               <button
                 type="button"
                 onClick={instalar}
-                className="inline-flex items-center gap-2 rounded-lg px-5 py-3 font-semibold text-white"
-                style={{ backgroundColor: "var(--color-primary)" }}
+                className="inline-flex items-center gap-2 rounded-lg px-5 py-3 font-semibold border"
+                style={{ borderColor: "var(--color-primary)", color: "var(--color-primary)" }}
               >
-                <Icon name="bi-download" aria-hidden="true" />
-                Instalar la app
+                <Icon name="bi-house-door" aria-hidden="true" />
+                Instalar versión web
               </button>
-            ) : (
+            ) : esIOS ? (
               <p className="text-sm font-medium" style={{ color: "var(--color-text-muted)" }}>
-                Sigue los pasos de abajo para instalarla en tu celular.
+                Sigue los pasos de abajo para instalarla en tu iPhone.
               </p>
-            )}
+            ) : null}
           </div>
         </div>
       </section>
+
+      {!instalada && (
+        <QrDescarga
+          url={new URL(URL_APK, window.location.origin).href}
+          titulo="Escanea y descarga la app"
+          texto="Apunta la cámara del celular (Android) a este código: se descarga la app Piura Alerta para instalarla."
+        />
+      )}
 
       <section className="grid gap-5 sm:grid-cols-3 mb-10">
         {VENTAJAS.map(({ icono, titulo, texto }) => (
@@ -128,7 +160,7 @@ function DescargarApp() {
         <section>
           <h3 className="text-xl font-bold mb-4">Cómo instalarla</h3>
           <div className="grid gap-4 sm:grid-cols-2">
-            <ListaPasos titulo="Android" pasos={PASOS_ANDROID} destacada={!esIOS} />
+            <ListaPasos titulo="Android (app)" pasos={PASOS_ANDROID} destacada={!esIOS} />
             <ListaPasos titulo="iPhone" pasos={PASOS_IPHONE} destacada={esIOS} />
           </div>
         </section>
