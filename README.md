@@ -2,8 +2,7 @@
 
 ## 👥 Integrantes
 
-- **Sheila Jacqueline Principe Merino** — Lead Hardware IoT & Backend Engineer
-- **Adrian Steven Juarez Panta** — Lead Frontend UI/UX & Structural Engineer
+- **Sheila Jacqueline Principe Merino** — Lead Hardware IoT & Backend Engineer / Lead Frontend UI/UX & Structural Engineer
 
 ## 📝 Descripción
 
