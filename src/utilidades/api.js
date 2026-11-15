@@ -87,6 +87,13 @@ export function getHistorico(sensorCodigo = SENSOR_POR_DEFECTO, minutos = 180) {
   return apiFetch(`/api/lecturas${query({ sensor: sensorCodigo, minutos })}`);
 }
 
+// Puntaje de riesgo de 0 a 100 explicado factor por factor (backend
+// servicios/puntajeRiesgo.js). Con ubicación suma la zona de riesgo y el
+// albergue más cercano; sin ella, solo el río y la lluvia.
+export function getRiesgo(sensorCodigo = SENSOR_POR_DEFECTO, ubicacion = null) {
+  return apiFetch(`/api/riesgo${query({ sensor: sensorCodigo, lat: ubicacion?.lat, lon: ubicacion?.lon })}`);
+}
+
 // --- Mapa: albergues y zonas de riesgo -------------------------------------
 
 export function getAlbergues() {
