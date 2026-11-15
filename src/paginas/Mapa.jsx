@@ -12,6 +12,21 @@ function Mapa() {
   const [errorUbicacion, setErrorUbicacion] = useState(null);
   const { data: albergues } = useAlbergues();
 
+  // En celular el resultado queda debajo del mapa, fuera de la vista: al
+  // elegir un punto se baja hasta él para que la persona vea la respuesta.
+  function elegirPunto(nuevo) {
+    setPunto(nuevo);
+    if (window.matchMedia?.("(max-width: 1023px)").matches) {
+      const suave = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      requestAnimationFrame(() =>
+        document
+          .getElementById("analisis-titulo")
+          ?.closest("section")
+          ?.scrollIntoView({ behavior: suave ? "smooth" : "auto", block: "start" })
+      );
+    }
+  }
+
   function usarMiUbicacion() {
     setErrorUbicacion(null);
     if (!navigator.geolocation) {
@@ -26,7 +41,7 @@ function Mapa() {
           lon: Number(pos.coords.longitude.toFixed(5)),
         };
         guardarUbicacion(nueva);
-        setPunto(nueva);
+        elegirPunto(nueva);
         setBuscando(false);
       },
       () => {
@@ -51,7 +66,7 @@ function Mapa() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
         <div className="lg:col-span-2">
-          <RiesgoMap altura="560px" puntoAnalizado={punto} onElegirPunto={setPunto} />
+          <RiesgoMap altura="min(560px, 60vh)" puntoAnalizado={punto} onElegirPunto={elegirPunto} />
         </div>
         <div className="flex flex-col gap-4">
           <AnalisisPunto

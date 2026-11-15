@@ -25,7 +25,7 @@ function AnalisisPunto({ punto, onUsarMiUbicacion, buscandoUbicacion, errorUbica
   return (
     <section
       aria-labelledby="analisis-titulo"
-      className="sr-entra rounded-3xl border p-5 flex flex-col gap-4"
+      className="scroll-mt-24 sr-entra rounded-3xl border p-5 flex flex-col gap-4"
       style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
     >
       <div>
@@ -35,7 +35,10 @@ function AnalisisPunto({ punto, onUsarMiUbicacion, buscandoUbicacion, errorUbica
         >
           ANALIZAR MI ZONA
         </span>
-        <h3 id="analisis-titulo" className="font-display text-2xl font-extrabold leading-tight mt-1">
+        <h3
+          id="analisis-titulo"
+          className="scroll-mt-28 font-display text-2xl font-extrabold leading-tight mt-1"
+        >
           {punto ? "Riesgo en el punto elegido" : "Toca el mapa donde vives"}
         </h3>
       </div>
