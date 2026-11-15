@@ -170,6 +170,17 @@ html {
   }
 }
 
+/* Leaflet pone a sus capas z-index de 400 a 1000 (mosaicos, marcadores,
+   controles de zoom). Sin un contexto de apilamiento propio, esas capas
+   compiten con el resto de la página y el mapa se monta encima del header
+   fijo (z-20) al hacer scroll. isolation: isolate las encierra dentro del
+   mapa, así que adentro siguen ordenadas pero afuera el mapa cuenta como un
+   elemento normal. */
+.leaflet-container {
+  isolation: isolate;
+  z-index: 0;
+}
+
 /* Ver RiesgoMap.jsx: solo se aplica sin clave de CARTO en tema oscuro, para
    que el respaldo de OpenStreetMap no se vea como un cuadrado blanco
    brillante en medio de una página oscura. */
