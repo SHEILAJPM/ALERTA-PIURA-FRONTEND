@@ -31,6 +31,7 @@ function RelojEnVivo() {
 const LINKS_BASE = [
   { to: "/", label: "Inicio" },
   { to: "/mapa", label: "Mapa" },
+  { to: "/mochila", label: "Mi mochila" },
   { to: "/reportes", label: "Reportes" },
   { to: "/historial", label: "Historial" },
   { to: "/seguro", label: "Seguro" },
