@@ -1,57 +1,69 @@
-@import url("https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap");
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --color-bg: #f4f6f8;
+  /* "Sol y Río": arena del desierto de Piura de fondo, azul del río como
+     color de marca y amarillo sol ("la ciudad del eterno sol") como acento
+     de acción. */
+  --color-bg: #f6f2ea;
   --color-surface: #ffffff;
-  --color-surface-alt: #eef2f5;
-  --color-border: #e2e8ee;
-  --color-text: #16232c;
-  --color-text-muted: #5b6b76;
+  --color-surface-alt: #f1ebdf;
+  --color-border: #e7e0d2;
+  --color-text: #10202e;
+  --color-text-muted: #5d6873;
 
-  /* Azul del escudo de Piura: color de marca/institucional. */
-  --color-primary: #0a2f52;
-  --color-primary-hover: #082541;
-  --color-primary-soft: #e2ebf3;
+  --color-primary: #0e2d47;
+  --color-primary-hover: #0a2240;
+  --color-primary-soft: #e3edf5;
 
-  /* Azul institucional fijo para el header/footer: no se invierte en modo oscuro. */
-  --color-brand-chrome: #0a2f52;
+  /* Azul fijo para el header/footer: no se invierte en modo oscuro. */
+  --color-brand-chrome: #0e2d47;
 
-  /* Dorado del escudo (corona, castillo): acento, nunca color de alerta. */
-  --color-dorado: #b8862e;
-  --color-dorado-soft: #faf1dc;
+  /* Dorado: acento de texto y bordes (contrasta sobre fondo claro). */
+  --color-dorado: #a8741c;
+  --color-dorado-soft: #fbf1d9;
 
-  --color-normal: #2f9e44;
-  --color-normal-soft: #e6f6ea;
-  --color-prealerta: #e8a33d;
-  --color-prealerta-soft: #fdf1de;
-  /* Rojo escarlata del escudo: reservado para alerta real, no para marca. */
-  --color-alerta: #c1272d;
-  --color-alerta-soft: #fbe4e5;
+  /* Amarillo sol: fondo de botones de acción principal, siempre con texto
+     azul encima (--color-sol-texto), nunca texto amarillo sobre claro. */
+  --color-sol: #ffcf33;
+  --color-sol-soft: #fff6d6;
+  --color-sol-texto: #0e2d47;
+
+  --color-normal: #2f9e5a;
+  --color-normal-soft: #e6f5ec;
+  --color-prealerta: #e88a1a;
+  --color-prealerta-soft: #fdf0de;
+  /* Rojo: reservado para alerta real, no para marca. */
+  --color-alerta: #d6362f;
+  --color-alerta-soft: #fde9e7;
 }
 
 .dark {
-  --color-bg: #0a1420;
-  --color-surface: #132436;
-  --color-surface-alt: #0f1d2c;
-  --color-border: #1e3346;
-  --color-text: #e8eef3;
-  --color-text-muted: #93a5b3;
+  --color-bg: #0b1a28;
+  --color-surface: #12263a;
+  --color-surface-alt: #0f2133;
+  --color-border: #1f3850;
+  --color-text: #eef2f5;
+  --color-text-muted: #9fb0bf;
 
-  --color-primary: #4a7ba6;
-  --color-primary-hover: #5c8cb8;
-  --color-primary-soft: #16324a;
+  --color-primary: #6aa5d6;
+  --color-primary-hover: #82b6e0;
+  --color-primary-soft: #173651;
 
-  --color-dorado: #e0b84a;
+  --color-dorado: #e6bd55;
   --color-dorado-soft: #3a2f12;
 
-  --color-normal: #4ecb6b;
+  --color-sol: #ffcf33;
+  --color-sol-soft: #3a3110;
+  --color-sol-texto: #0e2d47;
+
+  --color-normal: #4ecb80;
   --color-normal-soft: #123322;
-  --color-prealerta: #f2b854;
+  --color-prealerta: #f2a64a;
   --color-prealerta-soft: #3a2a10;
-  --color-alerta: #ef4b52;
+  --color-alerta: #ef5a52;
   --color-alerta-soft: #3a1416;
 }
 
@@ -87,6 +99,14 @@ body {
 
 button {
   font-family: inherit;
+}
+
+/* Titulares grandes con carácter (rediseño "Sol y Río"). */
+h1,
+h2,
+.font-display {
+  font-family: "Bricolage Grotesque", "Public Sans", system-ui, sans-serif;
+  letter-spacing: -0.02em;
 }
 
 .font-mono-data {
@@ -192,5 +212,142 @@ html {
   .simulacro-fondo,
   .simulacro-latido {
     animation: none;
+  }
+}
+
+/* --- Animaciones del rediseño "Sol y Río" ----------------------------------
+   Todas se apagan con "reducir movimiento" (al final del bloque). */
+@keyframes sr-entra {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sr-ola {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-120px);
+  }
+}
+
+@keyframes sr-latido {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 10px color-mix(in srgb, currentColor 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 0%, transparent);
+  }
+}
+
+@keyframes sr-hoja {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes sr-velo {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sr-barra {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes sr-pop {
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.sr-entra {
+  animation: sr-entra 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.sr-ola {
+  animation: sr-ola 3.5s linear infinite;
+}
+
+.sr-latido {
+  animation: sr-latido 1.6s infinite;
+}
+
+.sr-hoja {
+  animation: sr-hoja 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.sr-velo {
+  animation: sr-velo 0.4s ease both;
+}
+
+.sr-barra {
+  transform-origin: left;
+  animation: sr-barra 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.sr-pop {
+  animation: sr-pop 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.sr-anillo {
+  transition:
+    stroke-dashoffset 1.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+    stroke 0.4s ease;
+}
+
+.sr-presionable {
+  transition:
+    transform 0.12s ease,
+    background-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.sr-presionable:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-entra,
+  .sr-ola,
+  .sr-latido,
+  .sr-hoja,
+  .sr-velo,
+  .sr-barra,
+  .sr-pop {
+    animation: none;
+  }
+
+  .sr-anillo,
+  .sr-presionable {
+    transition: none;
   }
 }
