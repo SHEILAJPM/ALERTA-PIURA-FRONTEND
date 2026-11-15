@@ -8,10 +8,10 @@ import ErrorBanner from "../componentes/ErrorBanner";
 import ChequeoSeguridad from "../componentes/ChequeoSeguridad";
 import SismosRecientes from "../componentes/SismosRecientes";
 import Icon from "../componentes/Icon";
+import QueHagoAhora from "../componentes/QueHagoAhora";
 import { useUltimaLectura } from "../ganchos/useUltimaLectura";
 import { useSensores } from "../ganchos/useSensores";
 import { useHistorico } from "../ganchos/useHistorico";
-import { usePronosticoLluvia } from "../ganchos/usePronosticoLluvia";
 import { recommendations } from "../datos/content";
 import { formatearHora } from "../utilidades/fecha";
 import { SENSOR_POR_DEFECTO } from "../constantes/sensores";
@@ -63,51 +63,47 @@ function Home() {
     sinLecturas,
   } = useUltimaLectura(sensorCodigo);
   const { puntos, loading: cargandoHistorico, error: errorHistorico } = useHistorico(sensorCodigo, 180);
-  const { data: pronostico, error: errorPronostico } = usePronosticoLluvia();
 
   const sensorActivo = sensores?.find((s) => s.codigo === sensorCodigo) ?? sensores?.[0];
   const cargandoKpis = cargandoLectura || cargandoSensores;
 
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <section className="mb-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p
-              className="font-semibold text-sm uppercase tracking-wide"
-              style={{ color: "var(--color-primary)" }}
+      {sensores && sensores.length > 1 && (
+        <div className="flex justify-end mb-4">
+          <label className="text-sm">
+            <span className="block font-medium mb-1" style={{ color: "var(--color-text-muted)" }}>
+              Sensor
+            </span>
+            <select
+              value={sensorCodigo}
+              onChange={(e) => elegirSensor(e.target.value)}
+              aria-label="Elegir sensor a monitorear"
+              className="rounded-lg border px-3 py-2 text-sm font-medium"
+              style={selectStyle}
             >
-              Sistema de prevención
-            </p>
-            <h2 className="text-3xl md:text-4xl font-bold mt-2">Monitoreo del río Piura</h2>
-          </div>
-
-          {sensores && sensores.length > 1 && (
-            <label className="text-sm">
-              <span className="block font-medium mb-1" style={{ color: "var(--color-text-muted)" }}>
-                Sensor
-              </span>
-              <select
-                value={sensorCodigo}
-                onChange={(e) => elegirSensor(e.target.value)}
-                aria-label="Elegir sensor a monitorear"
-                className="rounded-lg border px-3 py-2 text-sm font-medium"
-                style={selectStyle}
-              >
-                {sensores.map((s) => (
-                  <option key={s.codigo} value={s.codigo}>
-                    {s.nombre} ({s.codigo})
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
+              {sensores.map((s) => (
+                <option key={s.codigo} value={s.codigo}>
+                  {s.nombre} ({s.codigo})
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
-        <p className="mt-3 max-w-2xl" style={{ color: "var(--color-text-muted)" }}>
-          Consulta en tiempo real el estado del río, los niveles registrados por el sensor y las alertas
-          activas durante periodos de lluvia.
+      )}
+
+      <QueHagoAhora
+        sensorCodigo={sensorCodigo}
+        nombreSensor={sensorActivo?.nombre}
+        estadoRio={sinLecturas ? null : lectura?.estado}
+      />
+
+      <div className="mt-12 mb-5">
+        <p className="font-semibold text-sm uppercase tracking-wide" style={{ color: "var(--color-dorado)" }}>
+          Datos en vivo
         </p>
-      </section>
+        <h2 className="text-3xl font-extrabold mt-1">Así está el río ahora</h2>
+      </div>
 
       <section className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-2">
@@ -219,7 +215,7 @@ function Home() {
         className="mt-8 mb-10 rounded-3xl p-6 border"
         style={{ backgroundColor: "var(--color-dorado-soft)", borderColor: "var(--color-dorado)" }}
       >
-        <h2 className="text-xl font-bold">Predicción y recomendaciones</h2>
+        <h2 className="text-xl font-bold">Recomendaciones para estar preparado</h2>
 
         {lectura?.prediccion?.disponible ? (
           <p className="mt-2 text-sm" style={{ color: "var(--color-text)" }}>
@@ -230,23 +226,6 @@ function Home() {
         ) : (
           <p className="mt-2 text-sm" style={{ color: "var(--color-text-muted)" }}>
             Por ahora no hay una proyección de crecida activa. Aun así, ten en cuenta estas recomendaciones:
-          </p>
-        )}
-
-        {!errorPronostico && pronostico && (
-          <p
-            className="mt-3 text-sm rounded-xl px-3 py-2"
-            style={{ backgroundColor: "var(--color-surface)", color: "var(--color-text)" }}
-          >
-            <Icon
-              name="bi-water"
-              aria-hidden="true"
-              className="mr-1.5 align-[-2px]"
-              style={{ color: "var(--color-dorado)" }}
-            />
-            Pronóstico: <strong>{Math.round(pronostico.probabilidadMax)}%</strong> de probabilidad de lluvia
-            en las próximas {pronostico.horas} horas
-            {pronostico.mmEsperados > 0 && ` (hasta ${pronostico.mmEsperados.toFixed(1)} mm)`}
           </p>
         )}
 
