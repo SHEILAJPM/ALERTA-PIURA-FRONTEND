@@ -8,7 +8,7 @@ const REFRESCO_MS = 60_000;
 
 // La ubicación se guarda solo en este navegador para no volver a pedir
 // permiso en cada visita; el backend la usa para calcular y no la guarda.
-function leerUbicacionGuardada() {
+export function leerUbicacionGuardada() {
   try {
     const guardada = JSON.parse(localStorage.getItem(CLAVE_UBICACION));
     return Number.isFinite(guardada?.lat) && Number.isFinite(guardada?.lon) ? guardada : null;
@@ -17,7 +17,7 @@ function leerUbicacionGuardada() {
   }
 }
 
-function guardarUbicacion(ubicacion) {
+export function guardarUbicacion(ubicacion) {
   try {
     localStorage.setItem(CLAVE_UBICACION, JSON.stringify(ubicacion));
   } catch {

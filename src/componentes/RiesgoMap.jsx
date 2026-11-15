@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { MapContainer, TileLayer, GeoJSON, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useZonasRiesgo } from "../ganchos/useZonasRiesgo";
@@ -78,6 +78,18 @@ function abrirRutaSegura(lat, lon) {
   );
 }
 
+// Toque en el mapa -> punto a analizar (ver paginas/Mapa.jsx). Solo se monta
+// cuando la página pasa onElegirPunto, así el mapa chico de otras páginas no
+// reacciona a los clics.
+function CapturarToque({ onElegir }) {
+  useMapEvents({
+    click(evento) {
+      onElegir({ lat: Number(evento.latlng.lat.toFixed(5)), lon: Number(evento.latlng.lng.toFixed(5)) });
+    },
+  });
+  return null;
+}
+
 function zonasAFeatureCollection(zonas) {
   return {
     type: "FeatureCollection",
@@ -89,7 +101,7 @@ function zonasAFeatureCollection(zonas) {
   };
 }
 
-function RiesgoMap({ altura = "520px", mostrarLeyenda = true }) {
+function RiesgoMap({ altura = "520px", mostrarLeyenda = true, puntoAnalizado = null, onElegirPunto }) {
   const { theme } = useTheme();
   const { data: zonas, loading: cargandoZonas, error: errorZonas } = useZonasRiesgo();
   const { data: albergues, loading: cargandoAlbergues, error: errorAlbergues } = useAlbergues();
@@ -194,6 +206,15 @@ function RiesgoMap({ altura = "520px", mostrarLeyenda = true }) {
             className={theme === "dark" && !CARTO_API_KEY ? "mapa-invertido" : undefined}
           >
             <TileLayer key={theme} attribution={atribucionMapa} url={urlTiles} />
+
+            {onElegirPunto && <CapturarToque onElegir={onElegirPunto} />}
+            {puntoAnalizado && (
+              <Marker
+                position={[puntoAnalizado.lat, puntoAnalizado.lon]}
+                icon={crearIconoTexto("Tú", "#0e2d47")}
+                zIndexOffset={1000}
+              />
+            )}
 
             {featureCollection.features.length > 0 && (
               <GeoJSON
