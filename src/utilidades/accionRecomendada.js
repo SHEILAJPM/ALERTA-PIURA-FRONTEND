@@ -47,15 +47,33 @@ const ACCIONES = {
     enlace: "/mochila",
     urgente: false,
   },
+  sin_datos: {
+    titulo: "No tenemos datos del río ahora",
+    texto:
+      "El sensor no está enviando lecturas, así que no podemos decirte que todo está tranquilo. Sigue los avisos de Defensa Civil y ten lista tu mochila.",
+    boton: "Revisar mi mochila",
+    enlace: "/mochila",
+    urgente: false,
+  },
 };
 
 // situacion: "casa" | "calle"; nivel: "bajo" | "medio" | "alto" (o null si
-// todavía no hay puntaje); estadoRio: estado de la última lectura.
-export function elegirAccion({ situacion = "casa", nivel, estadoRio }) {
+// todavía no hay puntaje); estadoRio: estado de la última lectura VIGENTE
+// (null si el sensor no reporta); datosCompletos: false si al puntaje le
+// faltan fuentes, para no decir "todo tranquilo" sin saberlo.
+export function elegirAccion({ situacion = "casa", nivel, estadoRio, datosCompletos = true }) {
   if (estadoRio === "alerta_roja") return ACCIONES.evacuar;
   if (nivel === "alto") return situacion === "calle" ? ACCIONES.calle_alto : ACCIONES.casa_alto;
   if (nivel === "medio") return situacion === "calle" ? ACCIONES.calle_medio : ACCIONES.casa_medio;
+  if (!datosCompletos) return ACCIONES.sin_datos;
   return ACCIONES.bajo;
+}
+
+// El estado de la última lectura solo vale si el puntaje confirma que el
+// sensor está reportando: una lectura de hace días no describe el río de hoy.
+export function estadoRioVigente(estadoRio, riesgo) {
+  const rio = riesgo?.factores?.find((f) => f.clave === "rio");
+  return rio?.sin_datos ? null : (estadoRio ?? null);
 }
 
 export const ESTILO_NIVEL = {

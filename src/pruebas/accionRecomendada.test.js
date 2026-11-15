@@ -1,4 +1,4 @@
-import { elegirAccion } from "../utilidades/accionRecomendada";
+import { elegirAccion, estadoRioVigente } from "../utilidades/accionRecomendada";
 
 describe("elegirAccion", () => {
   it("con el río en alerta roja siempre manda a evacuar, esté donde esté", () => {
@@ -30,5 +30,25 @@ describe("elegirAccion", () => {
   it("sin puntaje todavía o riesgo bajo: invitar a prepararse", () => {
     expect(elegirAccion({ nivel: null }).titulo).toMatch(/tranquilo/i);
     expect(elegirAccion({ nivel: "bajo" }).urgente).toBe(false);
+  });
+});
+
+describe("cuando faltan datos", () => {
+  it("con riesgo bajo pero datos incompletos no dice que todo está tranquilo", () => {
+    const accion = elegirAccion({ nivel: "bajo", datosCompletos: false });
+    expect(accion.titulo).toMatch(/no tenemos datos/i);
+    expect(accion.titulo).not.toMatch(/tranquilo/i);
+  });
+
+  it("estadoRioVigente descarta el estado si el sensor no reporta", () => {
+    const riesgoSinSensor = { factores: [{ clave: "rio", sin_datos: true }] };
+    expect(estadoRioVigente("prealerta", riesgoSinSensor)).toBeNull();
+  });
+
+  it("estadoRioVigente conserva el estado si el sensor reporta o si aún no hay puntaje", () => {
+    expect(estadoRioVigente("prealerta", { factores: [{ clave: "rio", sin_datos: false }] })).toBe(
+      "prealerta"
+    );
+    expect(estadoRioVigente("alerta_roja", null)).toBe("alerta_roja");
   });
 });

@@ -4,7 +4,7 @@ import AnilloPuntaje from "./AnilloPuntaje";
 import HojaRiesgo from "./HojaRiesgo";
 import Skeleton from "./Skeleton";
 import { useRiesgo } from "../ganchos/useRiesgo";
-import { elegirAccion, ESTILO_NIVEL } from "../utilidades/accionRecomendada";
+import { elegirAccion, estadoRioVigente, ESTILO_NIVEL } from "../utilidades/accionRecomendada";
 
 const CLAVE_SITUACION = "piura-alerta-situacion";
 
@@ -50,9 +50,15 @@ function QueHagoAhora({ sensorCodigo, nombreSensor, estadoRio }) {
     }
   }
 
-  const accion = elegirAccion({ situacion, nivel: riesgo?.nivel, estadoRio });
+  const rioActual = estadoRioVigente(estadoRio, riesgo);
+  const accion = elegirAccion({
+    situacion,
+    nivel: riesgo?.nivel,
+    estadoRio: rioActual,
+    datosCompletos: riesgo?.datos_completos ?? true,
+  });
   const estiloNivel = riesgo ? ESTILO_NIVEL[riesgo.nivel] : null;
-  const alertaRio = ALERTAS_RIO[estadoRio];
+  const alertaRio = ALERTAS_RIO[rioActual];
 
   return (
     <section aria-labelledby="que-hago-titulo" className="flex flex-col gap-4">
@@ -116,7 +122,7 @@ function QueHagoAhora({ sensorCodigo, nombreSensor, estadoRio }) {
               className="sr-entra flex items-center gap-2.5 rounded-2xl px-4 py-3 text-sm font-bold text-white"
               style={{
                 backgroundColor:
-                  estadoRio === "alerta_roja" ? "var(--color-alerta)" : "var(--color-prealerta)",
+                  rioActual === "alerta_roja" ? "var(--color-alerta)" : "var(--color-prealerta)",
                 animationDelay: "0.1s",
               }}
             >
