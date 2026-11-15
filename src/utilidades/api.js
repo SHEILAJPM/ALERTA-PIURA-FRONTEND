@@ -201,6 +201,11 @@ export function getHistorialAlertas(limite = 30) {
   return apiFetch(`/api/alertas/historial${query({ limite })}`);
 }
 
+// Avisos preventivos por lluvia fuerte pronosticada (backend avisoLluvia.js).
+export function getAvisosLluvia(limite = 1) {
+  return apiFetch(`/api/alertas/avisos-lluvia${query({ limite })}`);
+}
+
 export function difundirAlertaManual(mensaje) {
   return enviar("/api/alertas/difundir", "POST", { mensaje });
 }

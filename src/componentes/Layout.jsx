@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Header from "./Header";
 import AlertaGlobal from "./AlertaGlobal";
+import AvisoLluvia from "./AvisoLluvia";
 import Footer from "./Footer";
 import OnboardingTour from "./OnboardingTour";
 import BotonEmergencia from "./BotonEmergencia";
@@ -11,6 +12,7 @@ function Layout() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--color-bg)" }}>
       <Header />
       <AlertaGlobal />
+      <AvisoLluvia />
       <div className="flex-1">
         <Outlet />
       </div>
