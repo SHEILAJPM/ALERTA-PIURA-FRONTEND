@@ -36,7 +36,7 @@ function iconoConCache(clave, fabricar) {
 function crearIconoBootstrap(nombreIcono, color) {
   return iconoConCache(`bootstrap:${nombreIcono}:${color}`, () =>
     L.divIcon({
-      html: `<div style="background:${color};width:34px;height:34px;border-radius:9999px;display:flex;align-items:center;justify-content:center;color:white;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,0.35);border:2.5px solid white;">${iconoHTML(nombreIcono)}</div>`,
+      html: `<div class="pa-marcador" style="--c:${color};background:${color};width:34px;height:34px;border-radius:9999px;display:flex;align-items:center;justify-content:center;color:white;line-height:1;box-shadow:0 4px 12px rgba(13,46,87,0.28);border:2.5px solid white;">${iconoHTML(nombreIcono)}</div>`,
       className: "",
       iconSize: [34, 34],
       iconAnchor: [17, 17],
@@ -191,7 +191,10 @@ function RiesgoMap({ altura = "520px", mostrarLeyenda = true, puntoAnalizado = n
         </div>
       )}
 
-      <div className="rounded-2xl border overflow-hidden" style={{ borderColor: "var(--color-border)" }}>
+      <div
+        className="rounded-[28px] border overflow-hidden"
+        style={{ borderColor: "var(--color-glass-border)", boxShadow: "var(--shadow-glass)" }}
+      >
         {cargando ? (
           <Skeleton className="w-full rounded-none" style={{ height: altura }} />
         ) : (

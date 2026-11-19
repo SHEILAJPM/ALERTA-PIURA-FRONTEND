@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { InterruptorModoOscuro } from "../componentes/ThemeToggle";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexto/AuthContext";
 import { useResource } from "../ganchos/useResource";
@@ -30,10 +31,10 @@ const ROL_LABEL = {
 function Tarjeta({ titulo, children }) {
   return (
     <section
-      className="rounded-2xl border p-5 sm:p-6"
+      className="rounded-3xl border p-5 sm:p-6"
       style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
     >
-      <h3 className="font-bold mb-4">{titulo}</h3>
+      <h3 className="font-display text-lg mb-4">{titulo}</h3>
       {children}
     </section>
   );
@@ -326,15 +327,15 @@ function MiPerfil() {
   }
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <section className="mb-6">
+    <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10 pb-8">
+      <section className="pa-entra mb-6">
         <p
-          className="font-semibold text-sm uppercase tracking-wide"
+          className="text-[11px] font-extrabold uppercase tracking-[0.14em]"
           style={{ color: "var(--color-primary)" }}
         >
           Mi cuenta
         </p>
-        <h2 className="text-3xl md:text-4xl font-bold mt-2">Mi perfil</h2>
+        <h1 className="text-[34px] md:text-[40px] leading-[1.08] mt-1">Perfil y ajustes</h1>
       </section>
 
       {error && <ErrorBanner message={`No se pudo cargar tu perfil: ${error}`} onRetry={recargar} />}
@@ -347,17 +348,12 @@ function MiPerfil() {
       ) : (
         perfil && (
           <div className="space-y-4">
-            <div
-              className="flex items-center gap-4 rounded-2xl border p-5 sm:p-6"
-              style={{ borderColor: "var(--color-border)" }}
-            >
+            <div className="pa-hero pa-entra flex items-center gap-4 p-5 sm:p-6">
               <Avatar nombre={perfil.nombre} size={56} />
               <div className="min-w-0">
-                <p className="font-bold text-lg truncate">{perfil.nombre}</p>
-                <p className="text-sm truncate" style={{ color: "var(--color-text-muted)" }}>
-                  {perfil.correo}
-                </p>
-                <p className="text-xs mt-1" style={{ color: "var(--color-text-muted)" }}>
+                <p className="font-display font-extrabold text-xl truncate">{perfil.nombre}</p>
+                <p className="text-sm truncate text-white/80">{perfil.correo}</p>
+                <p className="text-xs mt-1 text-white/70">
                   {ROL_LABEL[perfil.rol] ?? perfil.rol} · miembro desde{" "}
                   {new Date(perfil.creado_en).toLocaleDateString("es-PE", {
                     day: "2-digit",
@@ -377,8 +373,7 @@ function MiPerfil() {
               </p>
               <Link
                 to="/mis-reportes"
-                className="inline-block rounded-lg px-4 py-2 text-sm font-semibold text-white"
-                style={{ backgroundColor: "var(--color-primary)" }}
+                className="btn-dorado pa-tocable inline-flex items-center min-h-[44px] rounded-full px-5 text-sm font-extrabold"
               >
                 Ver mis reportes
               </Link>
@@ -390,12 +385,27 @@ function MiPerfil() {
               </p>
               <Link
                 to="/mi-poliza"
-                className="inline-block rounded-lg px-4 py-2 text-sm font-semibold text-white"
-                style={{ backgroundColor: "var(--color-primary)" }}
+                className="btn-dorado pa-tocable inline-flex items-center min-h-[44px] rounded-full px-5 text-sm font-extrabold"
               >
                 Ver mi póliza
               </Link>
             </Tarjeta>
+
+            <section className="flex flex-col gap-2" aria-labelledby="ajustes-titulo">
+              <p
+                id="ajustes-titulo"
+                className="px-4 text-[11px] font-extrabold tracking-[0.12em] uppercase"
+                style={{ color: "var(--color-text-muted)" }}
+              >
+                Ajustes
+              </p>
+              <div
+                className="rounded-3xl border overflow-hidden divide-y divide-[var(--color-border)]"
+                style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+              >
+                <InterruptorModoOscuro />
+              </div>
+            </section>
 
             <Tarjeta titulo="Datos de contacto">
               <FormularioDatos perfil={perfil} onGuardado={manejarGuardado} />

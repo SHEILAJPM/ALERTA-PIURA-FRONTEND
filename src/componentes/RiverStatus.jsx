@@ -4,6 +4,7 @@ import ErrorBanner from "./ErrorBanner";
 import { useUltimaLectura } from "../ganchos/useUltimaLectura";
 import { useEstadoSensores } from "../ganchos/useEstadoSensores";
 import Icon from "./Icon";
+import { NumeroAnimado } from "./Animados";
 import { formatearHora } from "../utilidades/fecha";
 import { SENSOR_POR_DEFECTO } from "../constantes/sensores";
 
@@ -96,24 +97,64 @@ function RiverStatus({ sensorCodigo = SENSOR_POR_DEFECTO, nombreSensor }) {
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <p className="text-sm font-medium" style={{ color: "var(--color-text-muted)" }}>
-            {nombreSensor ? `ESTADO ACTUAL — ${nombreSensor.toUpperCase()}` : "ESTADO ACTUAL DEL RÍO PIURA"}
-          </p>
-          <h2 className="font-mono-data text-4xl font-bold mt-2">{lectura.nivel_cm} cm</h2>
-          <p className="mt-1" style={{ color: "var(--color-text-muted)" }}>
-            {lectura.porcentaje}% del umbral de alerta roja
-          </p>
-        </div>
-
+      <div className="flex items-start justify-between gap-3">
+        <p
+          className="text-[11px] font-extrabold tracking-[0.12em] uppercase"
+          style={{ color: "var(--color-text-muted)" }}
+        >
+          {nombreSensor ? `Estado actual · ${nombreSensor}` : "Estado actual del río Piura"}
+        </p>
         <StatusBadge status={lectura.estado} />
       </div>
 
-      <div className="mt-6 pt-5 border-t" style={{ borderColor: "var(--color-border)" }}>
-        <div className="flex flex-col sm:flex-row sm:justify-between gap-2 text-sm">
+      <h2 className="font-mono-data mt-4 flex items-baseline gap-2">
+        <NumeroAnimado
+          valor={lectura.nivel_cm}
+          className="text-[64px] leading-none font-extrabold tracking-[-0.04em]"
+        />
+        <span className="text-xl font-bold" style={{ color: "var(--color-text-muted)" }}>
+          cm
+        </span>
+      </h2>
+
+      {/* Avance hacia el umbral de alerta roja. */}
+      <div className="mt-5">
+        <div className="flex justify-between text-[13px] font-semibold mb-2">
+          <span style={{ color: "var(--color-text-muted)" }}>Hacia alerta roja</span>
+          <span className="font-mono-data" style={{ color: "var(--color-title)" }}>
+            {lectura.porcentaje}%
+          </span>
+        </div>
+        <div
+          className="h-2.5 rounded-full overflow-hidden"
+          style={{ backgroundColor: "var(--color-surface-alt)" }}
+          role="progressbar"
+          aria-valuenow={Math.min(100, Number(lectura.porcentaje) || 0)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Porcentaje del umbral de alerta roja"
+        >
+          <div
+            className="sr-barra h-full rounded-full"
+            style={{
+              width: `${Math.min(100, Number(lectura.porcentaje) || 0)}%`,
+              background:
+                lectura.estado === "alerta_roja"
+                  ? "var(--color-alerta)"
+                  : lectura.estado === "prealerta"
+                    ? "linear-gradient(90deg, var(--color-sol), var(--color-prealerta-punto))"
+                    : "linear-gradient(90deg, var(--color-primary), var(--color-info))",
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="mt-6 pt-4 border-t" style={{ borderColor: "var(--color-border)" }}>
+        <div className="flex justify-between gap-2 text-sm">
           <span style={{ color: "var(--color-text-muted)" }}>Última lectura</span>
-          <span className="font-semibold font-mono-data">{formatearHora(lectura.medido_en)}</span>
+          <span className="font-bold font-mono-data" style={{ color: "var(--color-title)" }}>
+            {formatearHora(lectura.medido_en)}
+          </span>
         </div>
       </div>
     </section>

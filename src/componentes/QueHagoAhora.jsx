@@ -67,7 +67,7 @@ function QueHagoAhora({ sensorCodigo, nombreSensor, estadoRio }) {
           {nombreSensor ? `${nombreSensor} · ` : ""}
           {fechaDeHoy()}
         </p>
-        <h2 id="que-hago-titulo" className="text-4xl sm:text-5xl font-extrabold leading-none mt-1.5">
+        <h2 id="que-hago-titulo" className="text-[30px] sm:text-[36px] leading-tight mt-1">
           ¿Qué hago ahora?
         </h2>
         <p className="mt-2 text-[15px] max-w-xl" style={{ color: "var(--color-text-muted)" }}>
@@ -136,9 +136,16 @@ function QueHagoAhora({ sensorCodigo, nombreSensor, estadoRio }) {
 
           <section
             aria-labelledby="accion-titulo"
-            className="sr-entra relative overflow-hidden rounded-[28px] p-5 sm:p-6 text-white"
+            className={`sr-entra relative overflow-hidden rounded-[28px] p-5 sm:p-6 ${
+              accion.urgente ? "text-white" : "vidrio"
+            }`}
             style={{
-              backgroundColor: accion.urgente ? "var(--color-alerta)" : "var(--color-brand-chrome)",
+              ...(accion.urgente
+                ? {
+                    background: "linear-gradient(145deg, #d84040, var(--color-alerta))",
+                    boxShadow: "0 18px 40px rgba(198,40,40,0.3)",
+                  }
+                : {}),
               animationDelay: "0.15s",
             }}
           >
@@ -151,31 +158,46 @@ function QueHagoAhora({ sensorCodigo, nombreSensor, estadoRio }) {
               <path
                 className="sr-ola"
                 d="M0 30 Q 30 18 60 30 T 120 30 T 180 30 T 240 30 T 300 30 T 360 30 T 420 30 T 480 30 V 60 H 0 Z"
-                fill="rgba(255,255,255,0.08)"
+                fill={accion.urgente ? "rgba(255,255,255,0.1)" : "var(--color-primary-soft)"}
               />
             </svg>
             <div className="relative">
               <div className="flex flex-wrap gap-1.5">
                 <span
-                  className="text-[11px] font-extrabold tracking-[0.1em] px-2.5 py-1 rounded-full"
-                  style={{ backgroundColor: "var(--color-sol)", color: "var(--color-sol-texto)" }}
+                  className="btn-dorado text-[11px] font-extrabold tracking-[0.1em] px-2.5 py-1 rounded-full"
+                  style={{ boxShadow: "none" }}
                 >
                   ACCIÓN RECOMENDADA
                 </span>
                 {riesgo && (
-                  <span className="text-[11px] font-extrabold px-2.5 py-1 rounded-full bg-white/15">
+                  <span
+                    className="text-[11px] font-extrabold px-2.5 py-1 rounded-full"
+                    style={
+                      accion.urgente
+                        ? { backgroundColor: "rgba(255,255,255,0.18)" }
+                        : { backgroundColor: "var(--color-primary-soft)", color: "var(--color-primary)" }
+                    }
+                  >
                     {estiloNivel.texto} · {riesgo.puntaje}/100
                   </span>
                 )}
               </div>
-              <h3 id="accion-titulo" className="font-display text-3xl font-extrabold leading-[1.05] mt-3">
+              <h3
+                id="accion-titulo"
+                className="font-display text-3xl font-extrabold leading-[1.08] mt-3"
+                style={{ color: accion.urgente ? "#ffffff" : "var(--color-title)" }}
+              >
                 {accion.titulo}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-white/85 max-w-lg">{accion.texto}</p>
+              <p
+                className="mt-2 text-[15px] leading-relaxed max-w-lg"
+                style={{ color: accion.urgente ? "rgba(255,255,255,0.88)" : "var(--color-text-muted)" }}
+              >
+                {accion.texto}
+              </p>
               <Link
                 to={accion.enlace}
-                className="sr-presionable mt-4 inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl px-6 min-h-[52px] font-extrabold"
-                style={{ backgroundColor: "var(--color-sol)", color: "var(--color-sol-texto)" }}
+                className="btn-dorado pa-tocable mt-5 inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full px-7 min-h-[52px] font-extrabold"
               >
                 {accion.boton} →
               </Link>

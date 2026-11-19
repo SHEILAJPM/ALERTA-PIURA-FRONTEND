@@ -3,22 +3,30 @@ import { abrirTourOnboarding } from "./OnboardingTour";
 
 function Footer() {
   return (
-    <footer style={{ backgroundColor: "var(--color-brand-chrome)" }} className="text-white py-6 mt-auto">
-      <div className="max-w-7xl mx-auto px-4 text-center">
-        <p className="font-semibold">Río Piura Alerta</p>
-        <p className="text-sm text-white/60 mt-1">
+    <footer className="mt-10 px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="max-w-7xl mx-auto flex flex-col items-center gap-3 text-center">
+        <div className="orla w-28" aria-hidden="true" />
+        <p className="font-display text-base">Piura Alerta</p>
+        <p className="text-sm max-w-md" style={{ color: "var(--color-text-muted)" }}>
           Sistema de monitoreo y prevención ante peligros por lluvias
         </p>
-        <button
-          type="button"
-          onClick={abrirTourOnboarding}
-          className="text-sm text-white/60 hover:text-white transition underline mt-3"
-        >
-          ¿Cómo funciona esta app?
-        </button>
-        <Link to="/app" className="block text-sm text-white/60 hover:text-white transition underline mt-2">
-          Descarga la app en tu celular
-        </Link>
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-sm font-semibold">
+          <button
+            type="button"
+            onClick={abrirTourOnboarding}
+            className="min-h-[44px] transition hover:underline"
+            style={{ color: "var(--color-primary)" }}
+          >
+            ¿Cómo funciona esta app?
+          </button>
+          <Link
+            to="/app"
+            className="min-h-[44px] inline-flex items-center transition hover:underline"
+            style={{ color: "var(--color-primary)" }}
+          >
+            Descarga la app en tu celular
+          </Link>
+        </div>
       </div>
     </footer>
   );

@@ -146,8 +146,8 @@ function DialogoEmergencia({ onCerrar }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+      className="sr-velo fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-4"
+      style={{ backgroundColor: "rgba(10,22,36,0.45)", backdropFilter: "blur(6px)" }}
       onClick={onCerrar}
     >
       <div
@@ -156,8 +156,12 @@ function DialogoEmergencia({ onCerrar }) {
         aria-modal="true"
         aria-labelledby="emergencia-titulo"
         tabIndex={-1}
-        className="w-full max-w-sm rounded-2xl border p-6 outline-none"
-        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+        className="sr-hoja w-full max-w-sm rounded-[28px] border p-6 outline-none max-h-[90vh] overflow-y-auto"
+        style={{
+          backgroundColor: "var(--color-surface)",
+          borderColor: "var(--color-border)",
+          boxShadow: "0 24px 60px rgba(13,46,87,0.25)",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-2">
@@ -204,20 +208,44 @@ function DialogoEmergencia({ onCerrar }) {
   );
 }
 
-function BotonEmergencia() {
+// variante="barra": botón circular al centro de la barra inferior (móvil).
+// variante="lateral": botón ancho en la barra lateral (escritorio).
+function BotonEmergencia({ variante = "barra" }) {
   const [abierto, setAbierto] = useState(false);
+
+  // Vibración corta al tocar (Android/WebView): confirma el toque sin mirar.
+  function abrir() {
+    try {
+      navigator.vibrate?.(35);
+    } catch {
+      // sin vibración disponible: no pasa nada
+    }
+    setAbierto(true);
+  }
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setAbierto(true)}
-        aria-label="Ver números de emergencia"
-        className="fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl text-white animate-pulse-alert"
-        style={{ backgroundColor: "var(--color-alerta)" }}
-      >
-        <Icon name="bi-exclamation-triangle-fill" aria-hidden="true" />
-      </button>
+      {variante === "lateral" ? (
+        <button
+          type="button"
+          onClick={abrir}
+          aria-label="SOS: ver números de emergencia"
+          className="pa-sos pa-tocable w-full min-h-[52px] rounded-full flex items-center justify-center gap-2 font-extrabold tracking-wide"
+        >
+          <Icon name="bi-exclamation-triangle-fill" aria-hidden="true" className="text-lg" />
+          SOS · Emergencia
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={abrir}
+          aria-label="SOS: ver números de emergencia"
+          className="pa-sos w-16 h-16 -mt-8 rounded-full flex items-center justify-center text-[13px] font-extrabold tracking-[0.06em] border-4 active:scale-95 transition-transform"
+          style={{ borderColor: "var(--color-bg)" }}
+        >
+          SOS
+        </button>
+      )}
       {abierto && <DialogoEmergencia onCerrar={() => setAbierto(false)} />}
     </>
   );

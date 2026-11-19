@@ -130,10 +130,13 @@ function AsistenteFlotante() {
         onClick={() => setAbierto((v) => !v)}
         aria-label={abierto ? "Cerrar asistente virtual" : "Abrir asistente virtual"}
         aria-expanded={abierto}
-        className={`fixed bottom-24 right-5 z-40 w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl text-white ${
+        className={`fixed right-4 lg:right-6 z-40 w-13 h-13 rounded-full flex items-center justify-center text-[22px] text-white transition-transform active:scale-95 bottom-[calc(var(--alto-tabbar)+30px+env(safe-area-inset-bottom,0px))] lg:bottom-6 ${
           abierto ? "" : "animate-pulse-asistente"
         }`}
-        style={{ backgroundColor: "var(--color-primary)" }}
+        style={{
+          background: "linear-gradient(145deg, var(--color-hero-desde), var(--color-hero-hasta))",
+          boxShadow: "0 10px 24px rgba(13,46,87,0.3)",
+        }}
       >
         <Icon name={abierto ? "bi-x-lg" : "bi-robot"} aria-hidden="true" />
       </button>
@@ -142,12 +145,16 @@ function AsistenteFlotante() {
         <section
           role="dialog"
           aria-label="Asistente virtual"
-          className="fixed z-40 bottom-44 right-4 left-4 sm:left-auto sm:w-96 max-h-[60vh] flex flex-col rounded-2xl border shadow-xl overflow-hidden"
-          style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+          className="sr-hoja fixed z-40 right-3 left-3 sm:left-auto sm:w-96 lg:right-6 max-h-[60vh] flex flex-col rounded-[26px] border overflow-hidden bottom-[calc(var(--alto-tabbar)+96px+env(safe-area-inset-bottom,0px))] lg:bottom-24"
+          style={{
+            backgroundColor: "var(--color-surface)",
+            borderColor: "var(--color-border)",
+            boxShadow: "0 24px 60px rgba(13,46,87,0.22)",
+          }}
         >
           <header
-            className="px-4 py-3 flex items-center gap-2 text-white"
-            style={{ backgroundColor: "var(--color-brand-chrome)" }}
+            className="pa-hero px-4 py-3.5 flex items-center gap-2"
+            style={{ borderRadius: 0, boxShadow: "none" }}
           >
             <Icon name="bi-robot" aria-hidden="true" />
             <div>

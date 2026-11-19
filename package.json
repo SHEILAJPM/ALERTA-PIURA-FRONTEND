@@ -25,6 +25,7 @@
     "@capacitor/local-notifications": "^8.3.1",
     "@tailwindcss/vite": "^4.3.3",
     "leaflet": "^1.9.4",
+    "lucide-react": "^0.460.0",
     "qrcode": "^1.5.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

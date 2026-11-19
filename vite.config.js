@@ -13,8 +13,8 @@ export default defineConfig({
         name: "Piura Alerta",
         short_name: "Piura Alerta",
         description: "Monitoreo del río Piura y alertas de inundación en tiempo real",
-        theme_color: "#0a2f52",
-        background_color: "#0a2f52",
+        theme_color: "#faf7f0",
+        background_color: "#faf7f0",
         display: "standalone",
         start_url: "/",
         icons: [
