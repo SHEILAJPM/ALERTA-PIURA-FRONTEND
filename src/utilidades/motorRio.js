@@ -33,9 +33,32 @@ const X_MUSKINGUM = 0.2;
 export const UMBRAL_PREALERTA = 2.5;
 export const UMBRAL_ALERTA = 3.8;
 
+// Caudal máximo del río Piura el 27 de marzo de 2017 (Niño Costero), medido
+// en la presa Los Ejidos: 3 468 m3/s (Reyes, LACCEI 2020). Es el récord en la
+// ciudad; en 1998 fueron 3 367 m3/s en la estación Sánchez Cerro.
+export const CAUDAL_PICO_2017 = 3468;
+
+// caudalPico > 0: la crecida llega desde la cuenca alta como una onda
+// (hidrograma) que sube del caudal de cabecera al pico y luego baja.
 export const ESCENARIOS = {
-  normal: { nombre: "Normal", lluvia: 8, duracion: 120, caudal: 25, obstruccion: 0, transito: 240 },
-  fuerte: { nombre: "Lluvia fuerte", lluvia: 45, duracion: 180, caudal: 60, obstruccion: 0, transito: 240 },
+  normal: {
+    nombre: "Normal",
+    lluvia: 8,
+    duracion: 120,
+    caudal: 25,
+    obstruccion: 0,
+    transito: 240,
+    caudalPico: 0,
+  },
+  fuerte: {
+    nombre: "Lluvia fuerte",
+    lluvia: 45,
+    duracion: 180,
+    caudal: 60,
+    obstruccion: 0,
+    transito: 240,
+    caudalPico: 0,
+  },
   extrema: {
     nombre: "Lluvia extrema",
     lluvia: 110,
@@ -43,6 +66,7 @@ export const ESCENARIOS = {
     caudal: 120,
     obstruccion: 10,
     transito: 300,
+    caudalPico: 0,
   },
   obstruccion: {
     nombre: "Cauce obstruido",
@@ -51,8 +75,31 @@ export const ESCENARIOS = {
     caudal: 60,
     obstruccion: 60,
     transito: 240,
+    caudalPico: 0,
+  },
+  // Las 6 horas más críticas del 27 de marzo de 2017. Dato real: el pico de
+  // caudal (la onda de 3 350 m3/s más la lluvia sobre la ciudad llegan a unos
+  // 3 450 m3/s en el tramo bajo, a ~1 % del medido). Supuestos: el río ya
+  // venía crecido (700 m3/s) y el cauce urbano estaba en parte colmatado (10 %), como
+  // advirtieron entonces los ingenieros de Piura.
+  nino2017: {
+    nombre: "Niño Costero 2017 (27 de marzo)",
+    lluvia: 10,
+    duracion: 180,
+    caudal: 700,
+    obstruccion: 10,
+    transito: 300,
+    caudalPico: 3350,
+    horaPico: 3,
   },
 };
+
+// Forma de la onda de crecida: 0 al inicio, 1 en la hora pico, y baja después.
+export function formaCrecida(t, horaPico) {
+  const r = t / (horaPico * 3600);
+  if (!(r > 0)) return 0;
+  return Math.pow(r, 3) * Math.exp(3 * (1 - r));
+}
 
 export function nivelDesdeCaudal(caudal, ancho = CAUCE.ancho) {
   if (!(caudal > 0)) return 0;
@@ -73,6 +120,7 @@ export function nivelDesdeCaudal(caudal, ancho = CAUCE.ancho) {
 // transito (s), acoplado (bool: la planicie guarda agua) }
 export function simularRio(params) {
   const { lluvia, duracion, caudal, obstruccion, transito, acoplado = true } = params;
+  const { caudalPico = 0, horaPico = 3 } = params;
   const K = transito;
   const D = K * (1 - X_MUSKINGUM) + 0.5 * DT;
   const c0 = (-K * X_MUSKINGUM + 0.5 * DT) / D;
@@ -92,7 +140,8 @@ export function simularRio(params) {
     const t = n * DT;
     const i = t < duracion * 60 ? lluvia : 0;
     res.lluvia.push(i);
-    let aguasArriba = caudal;
+    let aguasArriba =
+      caudalPico > caudal ? caudal + (caudalPico - caudal) * formaCrecida(t, horaPico) : caudal;
     for (let k = 0; k < 3; k++) {
       const equilibrio = (C_ESCORRENTIA * i * A_TRIBUTARIA_KM2[k]) / 3.6;
       escorrentia[k] += (equilibrio - escorrentia[k]) * (DT / K_ESCORRENTIA);

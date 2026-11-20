@@ -7,6 +7,8 @@ import {
   ESCENARIOS,
   PASOS,
   CAUCE,
+  CAUDAL_PICO_2017,
+  formaCrecida,
 } from "../utilidades/motorRio";
 import { leerSimulacion } from "../utilidades/simulacion";
 
@@ -62,6 +64,20 @@ describe("simularRio", () => {
     const maxVol = Math.max(...r.volumen[2]);
     expect(maxVol).toBeGreaterThan(0);
     expect(r.volumen[2][PASOS]).toBeLessThan(maxVol);
+  });
+
+  it("Niño Costero 2017: el pico del tramo bajo queda a menos de 3 % del caudal medido y desborda", () => {
+    const sinPlanicie = simularRio({ ...ESCENARIOS.nino2017, acoplado: false });
+    const pico = Math.max(...sinPlanicie.q[2]);
+    expect(Math.abs(pico - CAUDAL_PICO_2017) / CAUDAL_PICO_2017).toBeLessThan(0.03);
+    const r = simularRio({ ...ESCENARIOS.nino2017, acoplado: true });
+    expect(Math.max(...r.volumen[2])).toBeGreaterThan(0);
+  });
+
+  it("la onda de crecida empieza en 0, vale 1 en la hora pico y luego baja", () => {
+    expect(formaCrecida(0, 3)).toBe(0);
+    expect(formaCrecida(3 * 3600, 3)).toBeCloseTo(1);
+    expect(formaCrecida(5 * 3600, 3)).toBeLessThan(1);
   });
 
   it("nunca produce caudales ni volúmenes negativos ni NaN", () => {

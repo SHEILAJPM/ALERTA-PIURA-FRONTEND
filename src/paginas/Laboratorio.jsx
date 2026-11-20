@@ -464,7 +464,7 @@ const CONTROLES = [
     unidad: (v) =>
       v >= 60 ? `${(v / 60).toLocaleString("es-PE", { maximumFractionDigits: 2 })} h` : `${v} min`,
   },
-  { id: "caudal", etiqueta: "Caudal de cabecera", min: 0, max: 200, paso: 1, unidad: (v) => `${v} m³/s` },
+  { id: "caudal", etiqueta: "Caudal de cabecera", min: 0, max: 1000, paso: 5, unidad: (v) => `${v} m³/s` },
   {
     id: "obstruccion",
     etiqueta: "Obstrucción en tramo bajo",
@@ -482,6 +482,34 @@ const CONTROLES = [
     unidad: (v) => `${v} s`,
   },
 ];
+
+// Qué es dato real y qué es supuesto en el escenario del Niño Costero 2017.
+function FichaNino2017() {
+  return (
+    <div
+      className="rounded-2xl p-4 text-xs flex flex-col gap-2"
+      style={{ backgroundColor: "var(--color-demo-soft)", color: "var(--color-text)" }}
+    >
+      <p className="text-sm font-bold" style={{ color: "var(--color-demo)" }}>
+        Basado en un hecho real
+      </p>
+      <p>
+        El 27 de marzo de 2017 el río Piura llegó a <strong>3 468 m³/s</strong>, el caudal más alto registrado
+        en la ciudad (en 1998 fueron 3 367 m³/s). Se desbordó en el centro y el agua llegó hasta la Plaza de
+        Armas.
+      </p>
+      <p>
+        <strong>Dato real:</strong> el pico de caudal. <strong>Supuestos:</strong> el río ya venía crecido, el
+        cauce estaba en parte colmatado (10 %) y se comprimen en 6 horas las horas más críticas. El modelo no
+        está calibrado: muestra cómo se comporta una crecida así, no qué calles exactas se inundaron.
+      </p>
+      <p style={{ color: "var(--color-text-muted)" }}>
+        Fuentes: J. Reyes, LACCEI 2020 (caudal en la presa Los Ejidos); SENAMHI (1998, estación Sánchez
+        Cerro).
+      </p>
+    </div>
+  );
+}
 
 function PanelEscenario({ escenario, params, onEscenario, onCambio }) {
   const [abierto, setAbierto] = useState(true);
@@ -527,6 +555,7 @@ function PanelEscenario({ escenario, params, onEscenario, onCambio }) {
             <option value="personalizado">Personalizado</option>
           </select>
         </label>
+        {escenario === "nino2017" && <FichaNino2017 />}
         {CONTROLES.map((c) => (
           <label key={c.id} htmlFor={`ctrl-${c.id}`} className="flex flex-col gap-1 text-sm font-bold">
             <span className="flex justify-between gap-2">
