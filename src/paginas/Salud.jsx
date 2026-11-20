@@ -9,12 +9,16 @@ import {
   Navigation,
   Phone,
   Siren,
+  Stethoscope,
 } from "lucide-react";
 import { useAyudaCercana } from "../ganchos/useAyudaCercana";
 import { leerUbicacionGuardada, guardarUbicacion } from "../ganchos/useRiesgo";
 import { establecimientosCercanos, formatearDistancia, urlRutaAPie } from "../utilidades/geo";
 import BotonEscuchar from "../componentes/BotonEscuchar";
 import { enviarAvisoSalud } from "../utilidades/api";
+import { SINTOMAS, evaluarSintomas } from "../utilidades/sintomas";
+
+const NOMBRE_SINTOMA = Object.fromEntries(SINTOMAS.map((x) => [x.id, x.texto]));
 import { OPCIONES_AVISO } from "../datos/salud";
 import Skeleton from "../componentes/Skeleton";
 
@@ -103,10 +107,11 @@ const NUMEROS = [
   { numero: "113", nombre: "Línea MINSA", detalle: "Orientación de salud, gratis" },
 ];
 
-function Tarjeta({ children, className = "" }) {
+function Tarjeta({ children, className = "", id }) {
   return (
     <section
-      className={`rounded-3xl border p-5 sm:p-6 ${className}`}
+      id={id}
+      className={`scroll-mt-24 rounded-3xl border p-5 sm:p-6 ${className}`}
       style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
     >
       {children}
@@ -152,7 +157,7 @@ function PostasCercanas({ ubicacion, buscando, errorUbicacion, usarMiUbicacion }
   const cercanos = establecimientosCercanos(puntos, ubicacion, 5);
 
   return (
-    <Tarjeta className="flex flex-col gap-4">
+    <Tarjeta id="postas" className="flex flex-col gap-4">
       <div>
         <h2 className="font-display text-xl flex items-center gap-2">
           <Hospital size={22} aria-hidden="true" style={{ color: "var(--color-primary)" }} />
@@ -484,6 +489,197 @@ function AvisoEnfermedad({ ubicacion, buscando, usarMiUbicacion }) {
   );
 }
 
+const RESULTADO_SINTOMAS = {
+  emergencia: {
+    titulo: "Ve a emergencias ahora",
+    texto: "Marcaste una señal de alarma. No esperes: ve al hospital más cercano o llama al SAMU (106).",
+    color: "var(--color-alerta)",
+    fondo: "var(--color-alerta-soft)",
+  },
+  posta: {
+    titulo: "Ve a la posta hoy",
+    texto:
+      "Estos síntomas necesitan que te vea el personal de salud. No te automediques: para la fiebre, no tomes aspirina ni ibuprofeno.",
+    color: "var(--color-primary)",
+    fondo: "var(--color-primary-soft)",
+  },
+  vigilar: {
+    titulo: "Cuídate en casa y vigila",
+    texto:
+      "Toma bastante líquido (suero oral si hay diarrea) y descansa. Si aparece fiebre, empeoras o no mejoras en un día, ve a la posta.",
+    color: "var(--color-prealerta)",
+    fondo: "var(--color-prealerta-soft)",
+  },
+};
+
+// "¿Qué síntomas tienes?": orienta qué hacer y con qué enfermedad del
+// fenómeno puede estar relacionado. No es un diagnóstico.
+function RevisorSintomas({ onVerEnfermedad }) {
+  const [marcados, setMarcados] = useState([]);
+  const [contactoAgua, setContactoAgua] = useState(false);
+  const [grupoRiesgo, setGrupoRiesgo] = useState(false);
+  const { nivel, posibles } = evaluarSintomas(marcados, { contactoAgua, grupoRiesgo });
+  const resultado = nivel ? RESULTADO_SINTOMAS[nivel] : null;
+
+  function alternar(id) {
+    setMarcados((m) => (m.includes(id) ? m.filter((x) => x !== id) : [...m, id]));
+  }
+
+  const comunes = SINTOMAS.filter((x) => !x.alarma);
+  const alarmas = SINTOMAS.filter((x) => x.alarma);
+  const chip = (x) => {
+    const activo = marcados.includes(x.id);
+    return (
+      <button
+        key={x.id}
+        type="button"
+        aria-pressed={activo}
+        onClick={() => alternar(x.id)}
+        className="pa-tocable min-h-[44px] px-4 rounded-full text-sm font-semibold border text-left"
+        style={
+          activo
+            ? {
+                backgroundColor: x.alarma ? "var(--color-alerta)" : "var(--color-activo)",
+                color: "#ffffff",
+                borderColor: "transparent",
+              }
+            : {
+                backgroundColor: "var(--color-surface-alt)",
+                color: "var(--color-text)",
+                borderColor: "transparent",
+              }
+        }
+      >
+        {x.texto}
+      </button>
+    );
+  };
+
+  return (
+    <Tarjeta className="flex flex-col gap-4">
+      <div>
+        <h2 className="font-display text-xl flex items-center gap-2">
+          <Stethoscope size={22} aria-hidden="true" style={{ color: "var(--color-primary)" }} />
+          ¿Qué síntomas tienes?
+        </h2>
+        <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>
+          Marca lo que sientes tú o la persona que cuidas. Te decimos qué hacer.
+        </p>
+      </div>
+
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Síntomas">
+        {comunes.map(chip)}
+      </div>
+      <div>
+        <p
+          className="text-xs font-extrabold uppercase tracking-[0.1em] mb-2"
+          style={{ color: "var(--color-alerta)" }}
+        >
+          Señales de alarma
+        </p>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Señales de alarma">
+          {alarmas.map(chip)}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2 text-sm">
+        {[
+          [contactoAgua, setContactoAgua, "Estuvo en contacto con agua o barro de la inundación"],
+          [grupoRiesgo, setGrupoRiesgo, "Es un bebé o niño pequeño, una gestante o un adulto mayor"],
+        ].map(([valor, cambiar, texto]) => (
+          <label key={texto} className="flex items-center gap-3 min-h-[44px] cursor-pointer">
+            <input
+              type="checkbox"
+              checked={valor}
+              onChange={(e) => cambiar(e.target.checked)}
+              className="w-5 h-5 shrink-0 accent-[var(--color-primary)]"
+            />
+            {texto}
+          </label>
+        ))}
+      </div>
+
+      {resultado && (
+        <div
+          role="status"
+          className="pa-entra rounded-2xl p-4 flex flex-col gap-3"
+          style={{ backgroundColor: resultado.fondo }}
+        >
+          <p className="font-display text-lg" style={{ color: resultado.color }}>
+            {resultado.titulo}
+          </p>
+          <p className="text-sm" style={{ color: "var(--color-text)" }}>
+            {resultado.texto}
+          </p>
+          {posibles.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <p className="text-sm font-bold" style={{ color: "var(--color-title)" }}>
+                Por tus síntomas, posiblemente sea:
+              </p>
+              {posibles.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => onVerEnfermedad(p.id)}
+                  className="pa-tocable text-left rounded-2xl px-4 py-3 flex flex-col gap-1"
+                  style={{ backgroundColor: "var(--color-surface)" }}
+                >
+                  <span className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-display text-base" style={{ color: "var(--color-primary)" }}>
+                      {ENFERMEDADES.find((e) => e.id === p.id)?.titulo ?? p.id}
+                    </span>
+                    <span
+                      className="text-[11px] font-extrabold px-2.5 py-1 rounded-full"
+                      style={
+                        p.grado === "muchos"
+                          ? { backgroundColor: "var(--color-primary)", color: "#ffffff" }
+                          : { backgroundColor: "var(--color-surface-alt)", color: "var(--color-text-muted)" }
+                      }
+                    >
+                      {p.grado === "muchos" ? "Muchos síntomas coinciden" : "Algunos síntomas coinciden"}
+                    </span>
+                  </span>
+                  <span className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+                    Coinciden {p.coinciden.length} de {p.total} síntomas típicos:{" "}
+                    {p.coinciden.map((id) => NOMBRE_SINTOMA[id]?.toLowerCase() ?? id).join(", ")}
+                    {p.id === "leptospirosis" ? ", y el contacto con agua de la inundación" : ""}. Toca para
+                    ver cómo cuidarte.
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {nivel === "emergencia" ? (
+              <a
+                href="tel:106"
+                className="inline-flex items-center gap-2 min-h-[48px] px-5 rounded-full font-extrabold"
+                style={{ backgroundColor: "var(--color-alerta)", color: "#ffffff" }}
+              >
+                <Phone size={16} aria-hidden="true" /> Llamar al SAMU (106)
+              </a>
+            ) : null}
+            {nivel !== "vigilar" && (
+              <a
+                href="#postas"
+                className="inline-flex items-center gap-2 min-h-[48px] px-5 rounded-full font-bold"
+                style={{ backgroundColor: "var(--color-surface)", color: "var(--color-primary)" }}
+              >
+                <Hospital size={16} aria-hidden="true" /> Ver postas cercanas
+              </a>
+            )}
+            <BotonEscuchar texto={`${resultado.titulo}. ${resultado.texto}`} />
+          </div>
+          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+            Esto no es un diagnóstico: solo el personal de salud puede confirmarlo, a veces con un análisis.
+            Si dudas, ve a la posta o llama al 113.
+          </p>
+        </div>
+      )}
+    </Tarjeta>
+  );
+}
+
 function Salud() {
   const [abierta, setAbierta] = useState("dengue");
   const miUbicacion = useMiUbicacion();
@@ -499,10 +695,21 @@ function Salud() {
         </p>
         <h1 className="text-[34px] md:text-[40px] leading-[1.08] mt-1">Cuida tu salud</h1>
         <p className="mt-2 max-w-2xl text-[15px]" style={{ color: "var(--color-text-muted)" }}>
-          Después de las lluvias aumentan el dengue, la leptospirosis, las diarreas y otras enfermedades. Aquí
-          tienes cómo prevenirlas y dónde atenderte.
+          Después de las lluvias aumentan el dengue, la leptospirosis, las diarreas y otras enfermedades.
+          Revisa tus síntomas, cómo prevenirlas y dónde atenderte.
         </p>
       </section>
+
+      <RevisorSintomas
+        onVerEnfermedad={(id) => {
+          setAbierta(id);
+          requestAnimationFrame(() =>
+            document.getElementById("que-vigilar")?.scrollIntoView({ block: "start" })
+          );
+        }}
+      />
+
+      <AvisoEnfermedad {...miUbicacion} />
 
       <section
         className="rounded-3xl p-5 sm:p-6 flex flex-col gap-3"
@@ -545,10 +752,8 @@ function Salud() {
 
       <PostasCercanas {...miUbicacion} />
 
-      <AvisoEnfermedad {...miUbicacion} />
-
       <section className="flex flex-col gap-3" aria-labelledby="que-vigilar">
-        <h2 id="que-vigilar" className="text-[22px]">
+        <h2 id="que-vigilar" className="text-[22px] scroll-mt-24">
           Qué vigilar después de la inundación
         </h2>
         <ul className="flex flex-col gap-2">
