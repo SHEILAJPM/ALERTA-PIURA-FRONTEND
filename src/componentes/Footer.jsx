@@ -33,6 +33,13 @@ function Footer() {
           >
             Datos abiertos
           </Link>
+          <Link
+            to="/impacto"
+            className="min-h-[44px] inline-flex items-center transition hover:underline"
+            style={{ color: "var(--color-primary)" }}
+          >
+            Nuestro impacto
+          </Link>
         </div>
       </div>
     </footer>

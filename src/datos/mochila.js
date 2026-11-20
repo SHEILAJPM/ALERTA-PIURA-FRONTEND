@@ -8,4 +8,14 @@ export const COSAS_MOCHILA = [
   { id: "radio", nombre: "Radio a pilas", detalle: "Para escuchar a Defensa Civil" },
   { id: "ropa", nombre: "Ropa y frazada", detalle: "En bolsa plástica" },
   { id: "silbato", nombre: "Silbato", detalle: "Para pedir ayuda si te quedas atrapado" },
+  {
+    id: "higiene",
+    nombre: "Higiene personal y menstrual",
+    detalle: "Toallas higiénicas, jabón y papel higiénico",
+  },
+  {
+    id: "cuidados",
+    nombre: "Lo que necesiten bebés o adultos mayores",
+    detalle: "Pañales, leche, lentes o bastón (márcalo si no aplica)",
+  },
 ];

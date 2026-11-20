@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
   Backpack,
+  ChartColumn,
   ChevronRight,
+  ClipboardList,
+  Droplets,
+  GraduationCap,
   FlaskConical,
   HandHeart,
   HeartPulse,
@@ -55,12 +59,16 @@ const LINKS_BASE = [
   { to: "/mapa", label: "Mapa", icono: MapIcon },
   { to: "/reportes", label: "Reportes", icono: Megaphone },
   { to: "/mochila", label: "Mi mochila", icono: Backpack },
+  { to: "/plan", label: "Mi plan familiar", icono: ClipboardList },
+  { to: "/quiz", label: "¿Estás preparado?", icono: GraduationCap },
   { to: "/salud", label: "Salud", icono: HeartPulse },
+  { to: "/agua", label: "Agua segura", icono: Droplets },
   { to: "/ayuda", label: "Ayuda tras el fenómeno", icono: HandHeart },
   { to: "/agricultura", label: "Agricultores", icono: Sprout },
   { to: "/historial", label: "Historial", icono: History },
   { to: "/seguro", label: "Seguro", icono: ShieldCheck },
   { to: "/laboratorio", label: "Laboratorio", icono: FlaskConical },
+  { to: "/impacto", label: "Nuestro impacto", icono: ChartColumn },
   { to: "/app", label: "Descargar app", icono: Smartphone },
 ];
 

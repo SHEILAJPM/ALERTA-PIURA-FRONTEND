@@ -217,6 +217,96 @@ function FormularioApoyo({ perfil, onGuardado }) {
   );
 }
 
+// Sexo y año de nacimiento: opcionales, solo para estadísticas agregadas del
+// panel ODS (desglose por sexo y edad que recomienda el Marco de Sendai).
+function FormularioSobreTi({ perfil, onGuardado }) {
+  const [sexo, setSexo] = useState(perfil.sexo ?? "");
+  const [anio, setAnio] = useState(perfil.anio_nacimiento ? String(perfil.anio_nacimiento) : "");
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState(null);
+  const [exito, setExito] = useState(false);
+  const anioActual = new Date().getFullYear();
+
+  async function guardar(e) {
+    e.preventDefault();
+    const anioNumero = anio.trim() ? Number(anio) : null;
+    if (
+      anioNumero !== null &&
+      (!Number.isInteger(anioNumero) || anioNumero < 1900 || anioNumero > anioActual)
+    ) {
+      setError(`Escribe un año entre 1900 y ${anioActual}.`);
+      return;
+    }
+    setEnviando(true);
+    setError(null);
+    setExito(false);
+    try {
+      const actualizado = await actualizarPerfil({ sexo: sexo || null, anio_nacimiento: anioNumero });
+      onGuardado(actualizado);
+      setExito(true);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <form onSubmit={guardar} className="space-y-4">
+      <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+        Es opcional. Solo se usa para contar, sin nombres, cuántas mujeres y adultos mayores usan la app, y
+        así mejorar la ayuda para ellos. Nunca se muestra a nadie.
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <label className="block text-sm">
+          <span className="font-medium">Sexo</span>
+          <select
+            value={sexo}
+            onChange={(e) => {
+              setSexo(e.target.value);
+              setExito(false);
+            }}
+            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm min-h-[44px]"
+            style={inputStyle}
+          >
+            <option value="">Sin indicar</option>
+            <option value="mujer">Mujer</option>
+            <option value="hombre">Hombre</option>
+            <option value="otro">Otro</option>
+            <option value="prefiero_no_decir">Prefiero no decir</option>
+          </select>
+        </label>
+        <label className="block text-sm">
+          <span className="font-medium">Año de nacimiento</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={1900}
+            max={anioActual}
+            placeholder="Ej.: 1980"
+            value={anio}
+            onChange={(e) => {
+              setAnio(e.target.value);
+              setExito(false);
+            }}
+            className="mt-1 w-full rounded-lg border px-3 py-2 text-sm min-h-[44px]"
+            style={inputStyle}
+          />
+        </label>
+      </div>
+      {error && <Aviso tipo="error">{error}</Aviso>}
+      {exito && <Aviso tipo="exito">Guardado.</Aviso>}
+      <button
+        type="submit"
+        disabled={enviando}
+        className="btn-dorado pa-tocable inline-flex items-center min-h-[44px] rounded-full px-5 text-sm font-extrabold disabled:opacity-60"
+      >
+        {enviando ? "Guardando..." : "Guardar"}
+      </button>
+    </form>
+  );
+}
+
 function FormularioDatos({ perfil, onGuardado }) {
   const { data: sensores } = useSensores();
   const [form, setForm] = useState({
@@ -521,6 +611,10 @@ function MiPerfil() {
 
             <Tarjeta titulo="Apoyo en una evacuación">
               <FormularioApoyo perfil={perfil} onGuardado={manejarGuardado} />
+            </Tarjeta>
+
+            <Tarjeta titulo="Sobre ti (opcional)">
+              <FormularioSobreTi perfil={perfil} onGuardado={manejarGuardado} />
             </Tarjeta>
 
             <Tarjeta titulo="Datos de contacto">

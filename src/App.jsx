@@ -48,6 +48,10 @@ const Laboratorio = React.lazy(() => import("./paginas/Laboratorio"));
 const Salud = React.lazy(() => import("./paginas/Salud"));
 const Ayuda = React.lazy(() => import("./paginas/Ayuda"));
 const Agricultura = React.lazy(() => import("./paginas/Agricultura"));
+const ImpactoPublico = React.lazy(() => import("./paginas/Impacto"));
+const PlanFamiliar = React.lazy(() => import("./paginas/PlanFamiliar"));
+const Quiz = React.lazy(() => import("./paginas/Quiz"));
+const Agua = React.lazy(() => import("./paginas/Agua"));
 const VigilanciaSalud = React.lazy(() => import("./paginas/admin/VigilanciaSalud"));
 const ChequeosSeguridad = React.lazy(() => import("./paginas/admin/ChequeosSeguridad"));
 const Configuracion = React.lazy(() => import("./paginas/admin/Configuracion"));
@@ -90,6 +94,10 @@ function App() {
                   <Route path="/salud" element={conSuspenso(<Salud />)} />
                   <Route path="/ayuda" element={conSuspenso(<Ayuda />)} />
                   <Route path="/agricultura" element={conSuspenso(<Agricultura />)} />
+                  <Route path="/impacto" element={conSuspenso(<ImpactoPublico />)} />
+                  <Route path="/plan" element={conSuspenso(<PlanFamiliar />)} />
+                  <Route path="/quiz" element={conSuspenso(<Quiz />)} />
+                  <Route path="/agua" element={conSuspenso(<Agua />)} />
                   <Route element={<ProtectedRoute />}>
                     <Route path="/perfil" element={<MiPerfil />} />
                     <Route path="/mi-poliza" element={<MiPoliza />} />

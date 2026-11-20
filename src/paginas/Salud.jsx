@@ -752,6 +752,24 @@ function Salud() {
 
       <PostasCercanas {...miUbicacion} />
 
+      <Link
+        to="/agua"
+        className="pa-tocable rounded-3xl p-5 flex items-center justify-between gap-3"
+        style={{ backgroundColor: "var(--color-info-soft)" }}
+      >
+        <span>
+          <span className="block font-display text-lg" style={{ color: "var(--color-title)" }}>
+            Agua segura
+          </span>
+          <span className="block text-sm" style={{ color: "var(--color-text-muted)" }}>
+            Cómo potabilizar el agua en casa y avisar si no te llega o sale turbia.
+          </span>
+        </span>
+        <span className="font-bold text-sm shrink-0" style={{ color: "var(--color-primary)" }}>
+          Ver →
+        </span>
+      </Link>
+
       <section className="flex flex-col gap-3" aria-labelledby="que-vigilar">
         <h2 id="que-vigilar" className="text-[22px] scroll-mt-24">
           Qué vigilar después de la inundación

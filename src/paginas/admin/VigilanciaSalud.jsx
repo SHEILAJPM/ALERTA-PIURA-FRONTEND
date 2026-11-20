@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useResource } from "../../ganchos/useResource";
-import { getResumenSalud } from "../../utilidades/api";
+import { getResumenSalud, getResumenAgua } from "../../utilidades/api";
 import AdminPageHeader from "../../componentes/admin/AdminPageHeader";
 import RequiereRol from "../../componentes/admin/RequiereRol";
 import Skeleton from "../../componentes/Skeleton";
@@ -13,6 +13,66 @@ const PERIODOS = [7, 14, 30];
 // Avisos ANÓNIMOS de vecinos sobre casos de enfermedad tras el fenómeno:
 // sirven para ver dónde aumentan los casos y priorizar fumigación, brigadas
 // o charlas. No son diagnósticos confirmados.
+const TIPO_AGUA = {
+  sin_agua: "Sin agua",
+  agua_turbia: "Agua turbia o sucia",
+  agua_olor: "Olor o sabor raro",
+};
+
+// Avisos anónimos de problemas con el agua (ODS 6.1), del mismo periodo.
+function ResumenAgua({ dias }) {
+  const { data, loading, error } = useResource(() => getResumenAgua(dias), [dias]);
+  if (loading) return <Skeleton className="h-32 w-full rounded-2xl" />;
+  if (error) return null;
+  return (
+    <section
+      className="rounded-2xl border p-5 flex flex-col gap-3"
+      style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+    >
+      <h2 className="font-bold">Avisos de agua ({data.avisos})</h2>
+      {data.avisos === 0 ? (
+        <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+          No hay avisos de agua en los últimos {data.dias} días.
+        </p>
+      ) : (
+        <>
+          <p className="text-sm">
+            {Object.entries(data.por_tipo)
+              .map(([id, n]) => `${TIPO_AGUA[id] ?? id}: ${n}`)
+              .join(" · ")}
+          </p>
+          <ol className="flex flex-col gap-2">
+            {data.zonas.slice(0, 10).map((z, i) => (
+              <li
+                key={`${z.lat},${z.lon}`}
+                className="flex flex-wrap items-center gap-3 rounded-xl px-3 py-2 text-sm"
+                style={{ backgroundColor: "var(--color-surface-alt)" }}
+              >
+                <span className="font-mono-data font-bold w-6">{i + 1}</span>
+                <span className="flex-1 min-w-[160px]">
+                  <strong>{z.avisos}</strong> hogares ·{" "}
+                  {Object.entries(z.tipos)
+                    .map(([id, n]) => `${TIPO_AGUA[id] ?? id}: ${n}`)
+                    .join(" · ")}
+                </span>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${z.lat},${z.lon}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold"
+                  style={{ color: "var(--color-primary)" }}
+                >
+                  Ver zona
+                </a>
+              </li>
+            ))}
+          </ol>
+        </>
+      )}
+    </section>
+  );
+}
+
 function VigilanciaSalud() {
   const [dias, setDias] = useState(14);
   const { data, loading, error, recargar } = useResource(() => getResumenSalud(dias), [dias]);
@@ -154,6 +214,7 @@ function VigilanciaSalud() {
             </>
           )
         )}
+        <ResumenAgua dias={dias} />
       </div>
     </RequiereRol>
   );
