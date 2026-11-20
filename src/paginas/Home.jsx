@@ -12,6 +12,7 @@ import Icon from "../componentes/Icon";
 import QueHagoAhora from "../componentes/QueHagoAhora";
 import HeroInicio from "../componentes/HeroInicio";
 import AlertasRecientes from "../componentes/AlertasRecientes";
+import DespuesDeLaInundacion from "../componentes/DespuesDeLaInundacion";
 import { Revelar } from "../componentes/Animados";
 import { useFoco } from "../ganchos/useAnimaciones";
 import { useUltimaLectura } from "../ganchos/useUltimaLectura";
@@ -129,6 +130,10 @@ function Home() {
         <div className="lg:col-span-6 xl:col-span-7">
           <AlertasRecientes />
         </div>
+      </div>
+
+      <div className="mt-10 empty:hidden">
+        <DespuesDeLaInundacion />
       </div>
 
       <Revelar className="mt-14">

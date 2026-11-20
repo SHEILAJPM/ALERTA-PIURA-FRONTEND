@@ -5,6 +5,7 @@ import {
   Camera,
   Check,
   CloudRain,
+  Droplets,
   House,
   LifeBuoy,
   MapPin,
@@ -35,15 +36,17 @@ const inputStyle = {
   color: "var(--color-text)",
 };
 
-// Atajos para describir el reporte: elegir uno escribe su nombre al inicio
-// de la descripción (la persona lo ve y lo puede editar). No es un campo
-// aparte: el backend sigue recibiendo solo la descripción.
+// Tipo de reporte: se guarda como `categoria` (mismos valores que
+// CATEGORIAS_REPORTE en el backend) y además escribe su nombre al inicio de la
+// descripción, que la persona ve y puede editar.
 const TIPOS = [
-  { id: "calle", texto: "Calle inundada", icono: Waves },
+  { id: "calle_inundada", texto: "Calle inundada", icono: Waves },
   { id: "desborde", texto: "Desborde del río", icono: TriangleAlert },
   { id: "lluvia", texto: "Lluvia intensa", icono: CloudRain },
-  { id: "dano", texto: "Daño en vivienda", icono: House },
-  { id: "riesgo", texto: "Personas en riesgo", icono: LifeBuoy },
+  { id: "dano_vivienda", texto: "Daño en vivienda", icono: House },
+  { id: "personas_riesgo", texto: "Personas en riesgo", icono: LifeBuoy },
+  // Después de las lluvias: posibles criaderos del zancudo del dengue.
+  { id: "agua_estancada", texto: "Agua estancada", icono: Droplets },
   { id: "otro", texto: "Otra situación", icono: MessageCircle },
 ];
 
@@ -130,6 +133,7 @@ function ReportForm({ onEnviar, enviando }) {
         autor_nombre: usuario ? undefined : autorNombre.trim() || undefined,
         descripcion: descripcion.trim(),
         foto_url: foto.url,
+        categoria: tipo ?? undefined,
         ...(ubicacion ?? {}),
       });
       setAutorNombre("");
@@ -241,7 +245,9 @@ function ReportForm({ onEnviar, enviando }) {
                   type="button"
                   aria-pressed={activo}
                   onClick={() => elegirTipo(t)}
-                  className="pa-tocable flex flex-col items-start gap-2 rounded-2xl border p-3.5 min-h-[88px] text-left"
+                  className={`pa-tocable flex flex-col items-start gap-2 rounded-2xl border p-3.5 min-h-[88px] text-left ${
+                    t.id === "otro" ? "col-span-2" : ""
+                  }`}
                   style={
                     activo
                       ? {

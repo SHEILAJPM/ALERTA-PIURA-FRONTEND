@@ -130,8 +130,15 @@ export function getReportes({
   );
 }
 
-export function crearReporte({ autor_nombre, descripcion, foto_url, lon, lat }) {
-  return enviar("/api/reportes-ciudadanos", "POST", { autor_nombre, descripcion, foto_url, lon, lat });
+export function crearReporte({ autor_nombre, descripcion, foto_url, lon, lat, categoria }) {
+  return enviar("/api/reportes-ciudadanos", "POST", {
+    autor_nombre,
+    descripcion,
+    foto_url,
+    lon,
+    lat,
+    categoria,
+  });
 }
 
 export function darLike(reporteId) {
@@ -266,6 +273,22 @@ export function actualizarEstadoTicket(id, estado) {
 
 export function getImpacto() {
   return apiFetch("/api/impacto");
+}
+
+export function getIndicadoresODS() {
+  return apiFetch("/api/impacto/ods");
+}
+
+// --- Datos abiertos (públicos, sin sesión) ---
+
+export function getCatalogoDatosAbiertos() {
+  return apiFetch("/api/datos-abiertos");
+}
+
+// URL absoluta para descargar/compartir: se abre en una pestaña nueva (web)
+// o en el navegador del sistema (app Android), no con fetch.
+export function urlDatosAbiertos(recurso, params = {}) {
+  return `${API_URL}/api/datos-abiertos/${recurso}${query(params)}`;
 }
 
 export function getConfiguracion() {

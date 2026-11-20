@@ -105,6 +105,118 @@ function AvisoCorreoNoVerificado() {
   );
 }
 
+// Registro VOLUNTARIO de apoyo para evacuar (ODS 10.2 / 11.5). Solo lo ve
+// Defensa Civil en la consola de Despacho, y solo si esta persona envía un
+// SOS: así sabe a quién priorizar. Guardar sin marcar nada lo borra.
+const TIPOS_APOYO = [
+  { id: "adulto_mayor", texto: "Adulto mayor" },
+  { id: "movilidad_reducida", texto: "Movilidad reducida o silla de ruedas" },
+  { id: "discapacidad_visual", texto: "Discapacidad visual" },
+  { id: "discapacidad_auditiva", texto: "Discapacidad auditiva" },
+  { id: "gestante", texto: "Gestante" },
+  { id: "ninos_pequenos", texto: "Vivo con niños pequeños" },
+  { id: "enfermedad_cronica", texto: "Enfermedad crónica o dependo de medicinas" },
+];
+
+function FormularioApoyo({ perfil, onGuardado }) {
+  const registrado = perfil.apoyo_evacuacion ?? [];
+  const [elegidos, setElegidos] = useState(registrado);
+  const [acepta, setAcepta] = useState(registrado.length > 0);
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState(null);
+  const [exito, setExito] = useState(null);
+
+  function alternar(id) {
+    setElegidos((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+    setExito(null);
+  }
+
+  async function guardar(e) {
+    e.preventDefault();
+    if (elegidos.length > 0 && !acepta) {
+      setError("Marca la casilla de consentimiento para guardar.");
+      return;
+    }
+    setEnviando(true);
+    setError(null);
+    try {
+      const actualizado = await actualizarPerfil({ apoyo_evacuacion: elegidos });
+      onGuardado(actualizado);
+      setExito(
+        elegidos.length > 0
+          ? "Guardado. Si pides SOS, Defensa Civil te verá como prioridad."
+          : "Registro borrado."
+      );
+      if (elegidos.length === 0) setAcepta(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <form onSubmit={guardar} className="space-y-4">
+      <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
+        Si tú o alguien de tu casa necesita ayuda para evacuar, márcalo. Es opcional. Solo lo ve Defensa Civil
+        cuando envías un SOS, para atenderte primero. Puedes borrarlo cuando quieras.
+      </p>
+      <fieldset className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <legend className="sr-only">Tipo de apoyo que necesitas</legend>
+        {TIPOS_APOYO.map((t) => (
+          <label
+            key={t.id}
+            className="flex items-center gap-3 min-h-[48px] rounded-2xl px-3.5 cursor-pointer text-sm font-semibold"
+            style={{
+              backgroundColor: elegidos.includes(t.id)
+                ? "var(--color-primary-soft)"
+                : "var(--color-surface-alt)",
+              color: elegidos.includes(t.id) ? "var(--color-primary)" : "var(--color-text)",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={elegidos.includes(t.id)}
+              onChange={() => alternar(t.id)}
+              className="w-5 h-5 shrink-0 accent-[var(--color-primary)]"
+            />
+            {t.texto}
+          </label>
+        ))}
+      </fieldset>
+      {elegidos.length > 0 && (
+        <label className="flex items-start gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={acepta}
+            onChange={(e) => {
+              setAcepta(e.target.checked);
+              setError(null);
+            }}
+            className="w-5 h-5 mt-0.5 shrink-0 accent-[var(--color-primary)]"
+          />
+          <span>
+            Acepto que Piura Alerta guarde esta información y la muestre a Defensa Civil solo si envío un SOS.
+          </span>
+        </label>
+      )}
+      {error && <Aviso tipo="error">{error}</Aviso>}
+      {exito && <Aviso tipo="exito">{exito}</Aviso>}
+      <button
+        type="submit"
+        disabled={enviando}
+        className="btn-dorado pa-tocable inline-flex items-center min-h-[44px] rounded-full px-5 text-sm font-extrabold disabled:opacity-60"
+      >
+        {enviando
+          ? "Guardando..."
+          : elegidos.length === 0 && registrado.length > 0
+            ? "Borrar mi registro"
+            : "Guardar"}
+      </button>
+    </form>
+  );
+}
+
 function FormularioDatos({ perfil, onGuardado }) {
   const { data: sensores } = useSensores();
   const [form, setForm] = useState({
@@ -406,6 +518,10 @@ function MiPerfil() {
                 <InterruptorModoOscuro />
               </div>
             </section>
+
+            <Tarjeta titulo="Apoyo en una evacuación">
+              <FormularioApoyo perfil={perfil} onGuardado={manejarGuardado} />
+            </Tarjeta>
 
             <Tarjeta titulo="Datos de contacto">
               <FormularioDatos perfil={perfil} onGuardado={manejarGuardado} />
