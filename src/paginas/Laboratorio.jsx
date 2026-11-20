@@ -599,8 +599,8 @@ async function exportarJSON(contrato, nombre) {
 
 function Laboratorio() {
   const [modo, setModo] = useState("crear"); // crear | archivo
-  const [escenario, setEscenario] = useState("fuerte");
-  const [params, setParams] = useState({ ...ESCENARIOS.fuerte, acoplado: true });
+  const [escenario, setEscenario] = useState("extrema");
+  const [params, setParams] = useState({ ...ESCENARIOS.extrema, acoplado: true });
   const [cargado, setCargado] = useState(null); // { simulacion, avisos, nombre }
   const [t, setT] = useState(null); // null = instante inicial sugerido
   const [reproduciendo, setReproduciendo] = useState(false);
@@ -620,15 +620,15 @@ function Laboratorio() {
   const simulacion = actual?.simulacion;
   const duracion = simulacion?.duracion ?? 0;
 
-  // Sin tiempo elegido, arranca a mitad de la subida del tramo bajo: así la
-  // ciudad ya muestra agua sin tener que reproducir.
+  // Sin tiempo elegido, arranca en el pico del tramo bajo: así la ciudad ya
+  // muestra la crecida (y el desborde, si lo hay) sin tener que reproducir.
   const tInicial = useMemo(() => {
     if (!simulacion) return 0;
     const bajo = simulacion.tramos[simulacion.tramos.length - 1];
     let pico = null;
     for (const p of simulacion.series)
       if (p.tramo === bajo && p.nivel !== null && (!pico || p.nivel > pico.nivel)) pico = p;
-    return pico ? Math.round(pico.t * 0.8) : 0;
+    return pico ? Math.round(pico.t) : 0;
   }, [simulacion]);
   const tActual = Math.min(t ?? tInicial, duracion);
 

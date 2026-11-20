@@ -58,14 +58,15 @@ function ruido(x, z) {
 
 const cotaLecho = (f) => 4 * (1 - f); // el norte está unos metros más alto
 
-// Relieve estimado: cauce, ribera y planicie que sube rápido lejos del río
-// (un desborde ocupa la franja ribereña, no barrios enteros).
+// Relieve estimado: cauce, ribera y una planicie casi plana, como la de Piura
+// (sube unos 3,5 m en el primer kilómetro). Así, cuando el agua pasa la ribera
+// se mete por las calles de las orillas, con las casas asomando del agua.
 function cotaTerreno(x, z, d, f) {
   let local;
   if (d < MEDIO_CAUCE) local = 0.3 * (d / MEDIO_CAUCE) ** 2;
   else if (d < FIN_RIBERA)
     local = 0.3 + (CAUCE.ribera - 0.3) * ((d - MEDIO_CAUCE) / (FIN_RIBERA - MEDIO_CAUCE));
-  else local = CAUCE.ribera + 7 * Math.min(1, (d - FIN_RIBERA) / 900) ** 0.6 + ruido(x, z) * 0.2;
+  else local = CAUCE.ribera + 3.5 * Math.min(1, (d - FIN_RIBERA) / 1000) ** 0.7 + ruido(x, z) * 0.15;
   return cotaLecho(f) + local;
 }
 const sueloEn = (x, z) => {
@@ -74,9 +75,12 @@ const sueloEn = (x, z) => {
 };
 
 // Nivel del agua (m sobre el lecho) en la posición f, interpolando entre los
-// centros de los tramos ALTO (1/6), MEDIO (1/2) y BAJO (5/6).
+// centros de los tramos. Los tramos son conceptuales: el BAJO, donde se
+// acumula toda la crecida, se ubica en el centro de Piura (puentes Sánchez
+// Cerro, Colgante y Bolognesi) y sigue hacia el sur; ALTO y MEDIO, aguas arriba.
+const CENTROS_TRAMO = [0.12, 0.3, 0.5];
 function nivelEn(f, niveles) {
-  const c = [1 / 6, 1 / 2, 5 / 6];
+  const c = CENTROS_TRAMO;
   if (f <= c[0]) return niveles[0];
   if (f >= c[2]) return niveles[2];
   const k = f < c[1] ? 0 : 1;
@@ -427,7 +431,7 @@ function construirEscena(contenedor, { oscuro, reducirMovimiento, ciudad, calida
   const medioAncho = (ANCHO_M * ESCALA) / 2;
   const medioLargo = (LARGO_M * ESCALA) / 2;
   const LEJOS = 1600;
-  const yBorde = (CAUCE.ribera + 7.5) * ESCALA * EXAG_TERRENO;
+  const yBorde = (CAUCE.ribera + 6.5) * ESCALA * EXAG_TERRENO;
   for (const [ancho, largo, x, z] of [
     [LEJOS * 2, LEJOS - medioLargo, 0, -(medioLargo + LEJOS) / 2],
     [LEJOS * 2, LEJOS - medioLargo, 0, (medioLargo + LEJOS) / 2],
@@ -516,7 +520,7 @@ function construirEscena(contenedor, { oscuro, reducirMovimiento, ciudad, calida
     const p = geoAgua.attributes.position;
     for (let i = 0; i < n; i++) {
       const superficie = cotaLecho(info.f[i]) + nivelEn(info.f[i], niveles);
-      const mojado = info.d[i] < 700 && superficie > info.suelo[i] + 0.04;
+      const mojado = info.d[i] < 1300 && superficie > info.suelo[i] + 0.04;
       p.setY(i, (mojado ? superficie : info.suelo[i] - 1.5) * ESCALA * EXAG_TERRENO);
     }
     p.needsUpdate = true;
@@ -607,9 +611,9 @@ function construirEscena(contenedor, { oscuro, reducirMovimiento, ciudad, calida
     escena.add(r);
   }
   [
-    ["ALTO", 1 / 6],
-    ["MEDIO", 1 / 2],
-    ["BAJO", 5 / 6],
+    ["ALTO", CENTROS_TRAMO[0]],
+    ["MEDIO", CENTROS_TRAMO[1]],
+    ["BAJO", CENTROS_TRAMO[2]],
   ].forEach(([texto, f]) => {
     const objetivo = f * LARGO_RIO;
     let i = 1;
@@ -743,6 +747,8 @@ function webglDisponible() {
 
 // niveles: [ALTO, MEDIO, BAJO] en m sobre el lecho; lluvia en mm/h; caudal del
 // tramo bajo en m3/s (marca la velocidad de la corriente).
+const NOMBRE_TRAMO = ["ALTO", "MEDIO", "BAJO"];
+
 function CiudadPiura3D({ niveles, lluvia = 0, caudal = 0 }) {
   const contenedorRef = useRef(null);
   const escenaRef = useRef(null);
@@ -828,6 +834,23 @@ function CiudadPiura3D({ niveles, lluvia = 0, caudal = 0 }) {
         >
           {calidad === "alta" ? "Detalle: alto" : "Detalle: liviano"}
         </button>
+        {(() => {
+          const excesos = niveles.map((h) => h - CAUCE.ribera);
+          const mayor = Math.max(...excesos);
+          if (!(mayor > 0.02)) return null;
+          const tramos = NOMBRE_TRAMO.filter((_, i) => excesos[i] > 0.02);
+          return (
+            <span
+              role="status"
+              className="absolute top-12 left-3 z-10 max-w-[calc(100%-24px)] text-xs font-bold px-3 py-1.5 rounded-2xl pointer-events-none"
+              style={{ backgroundColor: "var(--color-glass-fuerte)", color: "var(--color-demo)" }}
+            >
+              Desborde simulado en {tramos.length > 1 ? "los tramos" : "el tramo"}{" "}
+              {new Intl.ListFormat("es", { type: "conjunction" }).format(tramos)}: el agua pasa la ribera por{" "}
+              {mayor.toLocaleString("es-PE", { maximumFractionDigits: 1 })} m
+            </span>
+          );
+        })()}
         {ciudad === null && (
           <span
             className="absolute inset-0 flex items-center justify-center text-sm font-semibold"
