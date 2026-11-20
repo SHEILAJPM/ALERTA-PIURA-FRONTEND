@@ -2,7 +2,7 @@ import { elegirAccion, estadoRioVigente } from "../utilidades/accionRecomendada"
 
 describe("elegirAccion", () => {
   it("con el río en alerta roja siempre manda a evacuar, esté donde esté", () => {
-    for (const situacion of ["casa", "calle"]) {
+    for (const situacion of ["casa", "calle", "campo", "negocio", "ayuda"]) {
       for (const nivel of ["bajo", "medio", "alto", null]) {
         const accion = elegirAccion({ situacion, nivel, estadoRio: "alerta_roja" });
         expect(accion.urgente).toBe(true);
@@ -50,5 +50,29 @@ describe("cuando faltan datos", () => {
       "prealerta"
     );
     expect(estadoRioVigente("alerta_roja", null)).toBe("alerta_roja");
+  });
+});
+
+describe("situaciones de crisis: chacra, negocio y ayuda", () => {
+  it("con riesgo medio o alto, protege la chacra o el negocio", () => {
+    expect(elegirAccion({ situacion: "campo", nivel: "alto" }).titulo).toMatch(/animales/i);
+    expect(elegirAccion({ situacion: "negocio", nivel: "medio" }).titulo).toMatch(/negocio/i);
+  });
+
+  it("con riesgo bajo, invita a prepararse y lleva a la página de ayuda", () => {
+    expect(elegirAccion({ situacion: "campo", nivel: "bajo" }).enlace).toBe("/ayuda#campo");
+    expect(elegirAccion({ situacion: "negocio", nivel: "bajo" }).enlace).toBe("/ayuda#negocio");
+  });
+
+  it("quien necesita ayuda: al albergue con riesgo alto; si no, cómo pedir ayuda", () => {
+    expect(elegirAccion({ situacion: "ayuda", nivel: "alto" }).enlace).toBe("/mapa");
+    expect(elegirAccion({ situacion: "ayuda", nivel: "medio" }).enlace).toBe("/ayuda#necesito-ayuda");
+  });
+
+  it("nunca dicen que todo está tranquilo, aunque falten datos", () => {
+    for (const situacion of ["campo", "negocio", "ayuda"]) {
+      const accion = elegirAccion({ situacion, nivel: "bajo", datosCompletos: false });
+      expect(accion.titulo).not.toMatch(/tranquilo/i);
+    }
   });
 });

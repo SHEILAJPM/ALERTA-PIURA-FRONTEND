@@ -5,13 +5,21 @@ import BotonEscuchar from "./BotonEscuchar";
 import HojaRiesgo from "./HojaRiesgo";
 import Skeleton from "./Skeleton";
 import { useRiesgo } from "../ganchos/useRiesgo";
-import { elegirAccion, estadoRioVigente, ESTILO_NIVEL } from "../utilidades/accionRecomendada";
+import {
+  elegirAccion,
+  estadoRioVigente,
+  ESTILO_NIVEL,
+  SITUACIONES_CRISIS,
+} from "../utilidades/accionRecomendada";
 
 const CLAVE_SITUACION = "piura-alerta-situacion";
 
 const SITUACIONES = [
   { id: "casa", titulo: "Estoy en mi casa", detalle: "Quiero prepararme" },
   { id: "calle", titulo: "Estoy en la calle", detalle: "Necesito ir a un lugar seguro" },
+  { id: "campo", titulo: "Tengo chacra o animales", detalle: "Quiero proteger mi cosecha" },
+  { id: "negocio", titulo: "Tengo un negocio", detalle: "Quiero proteger mis ingresos" },
+  { id: "ayuda", titulo: "Necesito ayuda", detalle: "Comida, techo o apoyo para mi familia" },
 ];
 
 const ALERTAS_RIO = {
@@ -21,7 +29,8 @@ const ALERTAS_RIO = {
 
 function leerSituacion() {
   try {
-    return localStorage.getItem(CLAVE_SITUACION) === "calle" ? "calle" : "casa";
+    const guardada = localStorage.getItem(CLAVE_SITUACION);
+    return SITUACIONES_CRISIS.includes(guardada) ? guardada : "casa";
   } catch {
     return "casa";
   }
@@ -92,7 +101,7 @@ function QueHagoAhora({ sensorCodigo, nombreSensor, estadoRio }) {
             >
               ¿EN QUÉ TE AYUDAMOS?
             </legend>
-            <div className="grid grid-cols-2 gap-2 mt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
               {SITUACIONES.map((s) => {
                 const activa = s.id === situacion;
                 return (
@@ -101,7 +110,9 @@ function QueHagoAhora({ sensorCodigo, nombreSensor, estadoRio }) {
                     type="button"
                     aria-pressed={activa}
                     onClick={() => elegirSituacion(s.id)}
-                    className="sr-presionable text-left rounded-2xl border-[1.5px] p-3 min-h-[76px]"
+                    className={`sr-presionable text-left rounded-2xl border-[1.5px] p-3 min-h-[76px] ${
+                      s.id === "ayuda" ? "col-span-2 sm:col-span-1" : ""
+                    }`}
                     style={{
                       borderColor: activa ? "var(--color-primary)" : "var(--color-border)",
                       backgroundColor: activa ? "var(--color-primary)" : "var(--color-surface-alt)",

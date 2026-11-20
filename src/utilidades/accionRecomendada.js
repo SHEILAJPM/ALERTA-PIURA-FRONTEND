@@ -47,6 +47,56 @@ const ACCIONES = {
     enlace: "/mochila",
     urgente: false,
   },
+  // Situaciones de crisis más allá de casa/calle: la chacra, el negocio y las
+  // familias que necesitan ayuda. El detalle está en /ayuda.
+  campo_alto: {
+    titulo: "Protege tus animales y tu cosecha",
+    texto:
+      "Lleva los animales a zona alta, sube semillas, abono y herramientas, y no cruces canales ni acequias crecidas. Tu vida va primero.",
+    boton: "Qué hacer con mi chacra",
+    enlace: "/ayuda#campo",
+    urgente: false,
+  },
+  campo_bajo: {
+    titulo: "Prepara tu chacra antes de la lluvia",
+    texto:
+      "Limpia drenes y acequias y ten pensado un lugar alto para tus animales. Si pierdes la cosecha, repórtalo en la Agencia Agraria.",
+    boton: "Qué hacer con mi chacra",
+    enlace: "/ayuda#campo",
+    urgente: false,
+  },
+  negocio_alto: {
+    titulo: "Protege tu negocio y tu mercadería",
+    texto:
+      "Sube la mercadería y los equipos a lo alto, guarda tus documentos en bolsas cerradas y corta la luz si entra agua.",
+    boton: "Qué hacer con mi negocio",
+    enlace: "/ayuda#negocio",
+    urgente: false,
+  },
+  negocio_bajo: {
+    titulo: "Prepara tu negocio",
+    texto:
+      "Toma fotos de tu local y tu mercadería: te sirven para reclamar un seguro o registrar daños. Revisa si tienes seguro.",
+    boton: "Qué hacer con mi negocio",
+    enlace: "/ayuda#negocio",
+    urgente: false,
+  },
+  ayuda_alto: {
+    titulo: "Ve al albergue antes de que suba el agua",
+    texto:
+      "Si tu casa es precaria o está cerca del río, no esperes: en el albergue tienes techo, agua y comida. Lleva tu DNI.",
+    boton: "Ver albergues cercanos",
+    enlace: "/mapa",
+    urgente: false,
+  },
+  ayuda_bajo: {
+    titulo: "Hay ayuda para tu familia",
+    texto:
+      "Si la emergencia te afecta, empadrónate como damnificado en tu municipalidad: así recibes la ayuda humanitaria. Conoce también tu albergue.",
+    boton: "Cómo pedir ayuda",
+    enlace: "/ayuda#necesito-ayuda",
+    urgente: false,
+  },
   sin_datos: {
     titulo: "No tenemos datos del río ahora",
     texto:
@@ -57,12 +107,24 @@ const ACCIONES = {
   },
 };
 
-// situacion: "casa" | "calle"; nivel: "bajo" | "medio" | "alto" (o null si
+export const SITUACIONES_CRISIS = ["casa", "calle", "campo", "negocio", "ayuda"];
+
+// situacion: una de SITUACIONES_CRISIS; nivel: "bajo" | "medio" | "alto" (o null si
 // todavía no hay puntaje); estadoRio: estado de la última lectura VIGENTE
 // (null si el sensor no reporta); datosCompletos: false si al puntaje le
 // faltan fuentes, para no decir "todo tranquilo" sin saberlo.
 export function elegirAccion({ situacion = "casa", nivel, estadoRio, datosCompletos = true }) {
+  // Con alerta roja manda evacuar sea cual sea la situación: la vida primero,
+  // la chacra o el negocio después.
   if (estadoRio === "alerta_roja") return ACCIONES.evacuar;
+  // Chacra, negocio y ayuda: nunca dicen "todo tranquilo", así que también
+  // sirven cuando faltan datos.
+  if (situacion === "campo" || situacion === "negocio") {
+    return nivel === "alto" || nivel === "medio"
+      ? ACCIONES[`${situacion}_alto`]
+      : ACCIONES[`${situacion}_bajo`];
+  }
+  if (situacion === "ayuda") return nivel === "alto" ? ACCIONES.ayuda_alto : ACCIONES.ayuda_bajo;
   if (nivel === "alto") return situacion === "calle" ? ACCIONES.calle_alto : ACCIONES.casa_alto;
   if (nivel === "medio") return situacion === "calle" ? ACCIONES.calle_medio : ACCIONES.casa_medio;
   if (!datosCompletos) return ACCIONES.sin_datos;

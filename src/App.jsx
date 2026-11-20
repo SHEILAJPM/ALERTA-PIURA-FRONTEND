@@ -45,6 +45,9 @@ const Impacto = React.lazy(() => import("./paginas/admin/Impacto"));
 const IndicadoresODS = React.lazy(() => import("./paginas/admin/IndicadoresODS"));
 const DatosAbiertos = React.lazy(() => import("./paginas/DatosAbiertos"));
 const Laboratorio = React.lazy(() => import("./paginas/Laboratorio"));
+const Salud = React.lazy(() => import("./paginas/Salud"));
+const Ayuda = React.lazy(() => import("./paginas/Ayuda"));
+const VigilanciaSalud = React.lazy(() => import("./paginas/admin/VigilanciaSalud"));
 const ChequeosSeguridad = React.lazy(() => import("./paginas/admin/ChequeosSeguridad"));
 const Configuracion = React.lazy(() => import("./paginas/admin/Configuracion"));
 const Simulacro = React.lazy(() => import("./paginas/admin/Simulacro"));
@@ -83,6 +86,8 @@ function App() {
                   <Route path="/app" element={<DescargarApp />} />
                   <Route path="/datos-abiertos" element={conSuspenso(<DatosAbiertos />)} />
                   <Route path="/laboratorio" element={conSuspenso(<Laboratorio />)} />
+                  <Route path="/salud" element={conSuspenso(<Salud />)} />
+                  <Route path="/ayuda" element={conSuspenso(<Ayuda />)} />
                   <Route element={<ProtectedRoute />}>
                     <Route path="/perfil" element={<MiPerfil />} />
                     <Route path="/mi-poliza" element={<MiPoliza />} />
@@ -107,6 +112,7 @@ function App() {
                     <Route path="asistente" element={conSuspenso(<AsistenteFeedback />)} />
                     <Route path="impacto" element={conSuspenso(<Impacto />)} />
                     <Route path="ods" element={conSuspenso(<IndicadoresODS />)} />
+                    <Route path="vigilancia-salud" element={conSuspenso(<VigilanciaSalud />)} />
                     <Route path="chequeos-seguridad" element={conSuspenso(<ChequeosSeguridad />)} />
                     <Route path="configuracion" element={conSuspenso(<Configuracion />)} />
                     <Route path="simulacro" element={conSuspenso(<Simulacro />)} />
