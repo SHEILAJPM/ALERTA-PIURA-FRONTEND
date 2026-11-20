@@ -814,7 +814,7 @@ function CiudadPiura3D({ niveles, lluvia = 0, caudal = 0 }) {
     <figure className="flex flex-col gap-2">
       <div
         ref={contenedorRef}
-        className="relative w-full h-[min(64vh,600px)] min-h-[340px] rounded-[24px] overflow-hidden touch-none"
+        className="relative isolate w-full h-[min(64vh,600px)] min-h-[340px] rounded-[24px] overflow-hidden touch-none"
         style={{ backgroundColor: "var(--color-surface-alt)" }}
         role="img"
         aria-label="Vista 3D de Piura y Castilla con el río Piura, sus puentes, calles y edificios. El agua sube según la simulación del escenario elegido."

@@ -232,7 +232,7 @@ function Reproductor({
 }) {
   return (
     <section
-      className="vidrio rounded-3xl p-4 sm:p-5 flex flex-col gap-3 z-10 lg:sticky lg:top-6"
+      className="vidrio relative rounded-3xl p-4 sm:p-5 flex flex-col gap-3 z-20 lg:sticky lg:top-6"
       aria-label="Reproducción del escenario"
     >
       <div className="flex flex-wrap items-center gap-2">
