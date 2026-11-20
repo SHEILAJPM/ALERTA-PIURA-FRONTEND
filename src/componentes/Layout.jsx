@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import Header, { BarraLateral, BarraInferior } from "./Header";
 import AlertaGlobal from "./AlertaGlobal";
 import AvisoLluvia from "./AvisoLluvia";
+import AvisoSinConexion from "./AvisoSinConexion";
 import Footer from "./Footer";
 import OnboardingTour from "./OnboardingTour";
 import AsistenteFlotante from "./AsistenteFlotante";
@@ -32,6 +33,7 @@ function Layout() {
       <div className="pa-contenido min-h-screen flex flex-col">
         <Header />
         <div className="empty:hidden flex flex-col gap-2 px-3 sm:px-6 lg:px-8 pt-3 lg:pt-5 [&>*]:rounded-[22px] [&>*]:overflow-hidden [&>*]:shadow-[var(--shadow-glass)]">
+          <AvisoSinConexion />
           <AlertaGlobal />
           <AvisoLluvia />
         </div>
