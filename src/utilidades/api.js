@@ -299,6 +299,18 @@ export function registrarUso(recurso, accion) {
   enviar("/api/uso", "POST", { recurso, accion }).catch(() => {});
 }
 
+export function getImpactoPublico() {
+  return apiFetch("/api/impacto/publico");
+}
+
+export function enviarAvisoAgua({ tipo, lon, lat }) {
+  return enviar("/api/agua/reportes", "POST", { tipo, lon, lat });
+}
+
+export function getResumenAgua(dias = 14) {
+  return apiFetch(`/api/agua/reportes/resumen${query({ dias })}`);
+}
+
 export function getIndicadoresODS() {
   return apiFetch("/api/impacto/ods");
 }
