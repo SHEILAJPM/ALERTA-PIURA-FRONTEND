@@ -60,8 +60,7 @@ function quitarPrefijoTipo(texto) {
 }
 
 function ReportForm({ onEnviar, enviando }) {
-  const { usuario } = useAuth();
-  const [autorNombre, setAutorNombre] = useState("");
+  const { usuario, abrirModal } = useAuth();
   const [descripcion, setDescripcion] = useState("");
   const [foto, setFoto] = useState(null); // { url, previsualizacion }
   const [subiendoFoto, setSubiendoFoto] = useState(false);
@@ -130,13 +129,11 @@ function ReportForm({ onEnviar, enviando }) {
     }
     try {
       const resultado = await onEnviar({
-        autor_nombre: usuario ? undefined : autorNombre.trim() || undefined,
         descripcion: descripcion.trim(),
         foto_url: foto.url,
         categoria: tipo ?? undefined,
         ...(ubicacion ?? {}),
       });
-      setAutorNombre("");
       setDescripcion("");
       setFoto(null);
       setUbicacion(null);
@@ -333,15 +330,20 @@ function ReportForm({ onEnviar, enviando }) {
               </p>
             </div>
           ) : (
-            <input
-              type="text"
-              placeholder="Tu nombre (opcional)"
-              aria-label="Tu nombre (opcional)"
-              value={autorNombre}
-              onChange={(e) => setAutorNombre(e.target.value)}
-              className="w-full rounded-2xl border px-4 py-3 text-[15px]"
-              style={inputStyle}
-            />
+            // Sin sesión no se escribe un nombre a mano (cualquiera podría
+            // firmar como otra persona): el reporte sale como "Anónimo".
+            <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+              Se publicará como <strong style={{ color: "var(--color-text)" }}>Anónimo</strong>.{" "}
+              <button
+                type="button"
+                onClick={() => abrirModal("login")}
+                className="font-bold underline"
+                style={{ color: "var(--color-primary)" }}
+              >
+                Inicia sesión
+              </button>{" "}
+              para que aparezca tu nombre.
+            </p>
           )}
         </div>
       )}
@@ -437,7 +439,7 @@ function ReportForm({ onEnviar, enviando }) {
               <p className="mt-1.5 flex items-center gap-1" style={{ color: "var(--color-text-muted)" }}>
                 <MapPin size={13} aria-hidden="true" />
                 {ubicacion ? "Con ubicación" : "Sin ubicación"}
-                {!usuario && autorNombre.trim() && <> · {autorNombre.trim()}</>}
+                {` · ${usuario ? usuario.nombre : "Anónimo"}`}
               </p>
             </div>
           </div>
