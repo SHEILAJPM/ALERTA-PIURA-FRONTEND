@@ -42,6 +42,9 @@ const Polizas = React.lazy(() => import("./paginas/admin/Polizas"));
 const ReclamosSeguro = React.lazy(() => import("./paginas/admin/ReclamosSeguro"));
 const AsistenteFeedback = React.lazy(() => import("./paginas/admin/AsistenteFeedback"));
 const Impacto = React.lazy(() => import("./paginas/admin/Impacto"));
+const IndicadoresODS = React.lazy(() => import("./paginas/admin/IndicadoresODS"));
+const DatosAbiertos = React.lazy(() => import("./paginas/DatosAbiertos"));
+const Laboratorio = React.lazy(() => import("./paginas/Laboratorio"));
 const ChequeosSeguridad = React.lazy(() => import("./paginas/admin/ChequeosSeguridad"));
 const Configuracion = React.lazy(() => import("./paginas/admin/Configuracion"));
 const Simulacro = React.lazy(() => import("./paginas/admin/Simulacro"));
@@ -78,6 +81,8 @@ function App() {
                   <Route path="/mochila" element={<Mochila />} />
                   <Route path="/seguro" element={<Seguro />} />
                   <Route path="/app" element={<DescargarApp />} />
+                  <Route path="/datos-abiertos" element={conSuspenso(<DatosAbiertos />)} />
+                  <Route path="/laboratorio" element={conSuspenso(<Laboratorio />)} />
                   <Route element={<ProtectedRoute />}>
                     <Route path="/perfil" element={<MiPerfil />} />
                     <Route path="/mi-poliza" element={<MiPoliza />} />
@@ -101,6 +106,7 @@ function App() {
                     <Route path="reclamos-seguro" element={conSuspenso(<ReclamosSeguro />)} />
                     <Route path="asistente" element={conSuspenso(<AsistenteFeedback />)} />
                     <Route path="impacto" element={conSuspenso(<Impacto />)} />
+                    <Route path="ods" element={conSuspenso(<IndicadoresODS />)} />
                     <Route path="chequeos-seguridad" element={conSuspenso(<ChequeosSeguridad />)} />
                     <Route path="configuracion" element={conSuspenso(<Configuracion />)} />
                     <Route path="simulacro" element={conSuspenso(<Simulacro />)} />

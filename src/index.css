@@ -54,6 +54,11 @@
   --color-info: #1565c0;
   --color-info-soft: #e6f0fb;
 
+  /* Laboratorio de simulación (DEMO): color propio, que no se usa en ningún
+     dato real, para que lo simulado nunca se confunda con el río real. */
+  --color-demo: #6b4fbb;
+  --color-demo-soft: #efeafb;
+
   /* Vidrio claro y manchas de luz del fondo. */
   --color-glass: rgba(255, 255, 255, 0.7);
   --color-glass-fuerte: rgba(255, 255, 255, 0.86);
@@ -103,6 +108,8 @@
   --color-alerta-soft: rgba(255, 107, 107, 0.14);
   --color-info: #6fa8ff;
   --color-info-soft: rgba(111, 168, 255, 0.14);
+  --color-demo: #b8a4ff;
+  --color-demo-soft: rgba(184, 164, 255, 0.14);
 
   --color-glass: rgba(20, 36, 58, 0.66);
   --color-glass-fuerte: rgba(20, 36, 58, 0.88);
@@ -1046,4 +1053,17 @@ html.pa-cambio-tema::view-transition-new(root) {
   .pa-foco.pa-tocable:hover {
     transform: none;
   }
+}
+
+/* Franja de "SIMULACIÓN" del Laboratorio: rayas diagonales para que se
+   reconozca como demostración aun sin leer el texto. */
+.pa-franja-demo {
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--color-demo) 14%, transparent) 0 10px,
+      transparent 10px 20px
+    ),
+    var(--color-demo-soft);
+  border: 1.5px dashed var(--color-demo);
 }

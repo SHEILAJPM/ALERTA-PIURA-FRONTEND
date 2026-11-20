@@ -26,6 +26,13 @@ function Footer() {
           >
             Descarga la app en tu celular
           </Link>
+          <Link
+            to="/datos-abiertos"
+            className="min-h-[44px] inline-flex items-center transition hover:underline"
+            style={{ color: "var(--color-primary)" }}
+          >
+            Datos abiertos
+          </Link>
         </div>
       </div>
     </footer>

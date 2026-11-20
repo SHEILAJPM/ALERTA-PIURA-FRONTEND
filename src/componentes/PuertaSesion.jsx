@@ -22,7 +22,13 @@ function PantallaAcceso() {
       style={{ backgroundColor: "var(--color-brand-chrome)" }}
     >
       <div className="flex flex-col items-center text-center mb-6">
-        <img src="/images/logo.svg" alt="" width={72} height={72} className="w-18 h-18" />
+        <img
+          src="/images/escudo-piura.png"
+          alt="Escudo de Piura"
+          width={68}
+          height={78}
+          className="w-[68px] h-[78px] object-contain"
+        />
         <h1 className="mt-3 text-2xl font-bold text-white">Río Piura Alerta</h1>
         <p className="mt-1 text-sm text-white/75 max-w-xs">
           Alertas de inundación del río Piura en tiempo real. Ingresa para continuar.

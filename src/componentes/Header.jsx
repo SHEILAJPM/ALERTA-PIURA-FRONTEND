@@ -3,6 +3,8 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   Backpack,
   ChevronRight,
+  Database,
+  FlaskConical,
   CirclePlus,
   History,
   House,
@@ -53,6 +55,8 @@ const LINKS_BASE = [
   { to: "/mochila", label: "Mi mochila", icono: Backpack },
   { to: "/historial", label: "Historial", icono: History },
   { to: "/seguro", label: "Seguro", icono: ShieldCheck },
+  { to: "/datos-abiertos", label: "Datos abiertos", icono: Database },
+  { to: "/laboratorio", label: "Laboratorio", icono: FlaskConical },
   { to: "/app", label: "Descargar app", icono: Smartphone },
 ];
 
@@ -77,7 +81,13 @@ function useConexion() {
 function Marca({ conexion }) {
   return (
     <div className="flex items-center gap-3 min-w-0">
-      <img src="/images/logo.svg" alt="" width={40} height={40} className="w-10 h-10 shrink-0" />
+      <img
+        src="/images/escudo-piura.png"
+        alt=""
+        width={36}
+        height={42}
+        className="w-9 h-[42px] shrink-0 object-contain"
+      />
       <div className="min-w-0">
         <p className="font-display text-[17px] leading-tight whitespace-nowrap">Piura Alerta</p>
         <p
