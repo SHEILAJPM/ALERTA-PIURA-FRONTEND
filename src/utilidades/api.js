@@ -275,6 +275,16 @@ export function getImpacto() {
   return apiFetch("/api/impacto");
 }
 
+// --- Avisos anónimos de enfermedad en la zona ---
+
+export function enviarAvisoSalud({ enfermedad, personas, lon, lat }) {
+  return enviar("/api/salud/reportes", "POST", { enfermedad, personas, lon, lat });
+}
+
+export function getResumenSalud(dias = 14) {
+  return apiFetch(`/api/salud/reportes/resumen${query({ dias })}`);
+}
+
 export function getIndicadoresODS() {
   return apiFetch("/api/impacto/ods");
 }

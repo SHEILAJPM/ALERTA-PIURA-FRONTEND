@@ -47,6 +47,7 @@ const GRUPOS = [
       { to: "/admin/chequeos-seguridad", label: "Chequeos de Seguridad", icon: "bi-person-badge" },
       { to: "/admin/impacto", label: "Panel de Impacto", icon: "bi-graph-up-arrow" },
       { to: "/admin/ods", label: "Indicadores ODS / Sendai", icon: "bi-clipboard-check" },
+      { to: "/admin/vigilancia-salud", label: "Vigilancia de Salud", icon: "bi-activity" },
     ],
   },
 ];

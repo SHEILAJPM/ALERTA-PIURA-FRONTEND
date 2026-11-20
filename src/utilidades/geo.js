@@ -75,3 +75,30 @@ export function urlRutaAPie(destino, origen = null) {
   if (origen) params.set("origin", `${origen.lat},${origen.lon}`);
   return `https://www.google.com/maps/dir/?${params}`;
 }
+
+// Lugares a los que NO tiene sentido derivar a alguien con fiebre, diarrea o
+// una herida (servicios especializados o de diagnóstico).
+const NO_DERIVAR =
+  /laboratorio|resonancia|oftalmol|onco|dental|odonto|ocupacional|c[aá]ncer|imagen|veterinari|est[eé]tic/i;
+// Atención general: centros y puestos de salud, postas, CAP, EsSalud, hospitales.
+const ATENCION_GENERAL =
+  /establecimiento de salud|puesto de salud|centro de salud|posta|^c\.?\s?s\b|^p\.?\s?s\b|hospital|\bcap\b|essalud|minsa/i;
+
+// Los establecimientos de salud más cercanos a `origen` a los que derivar a
+// una persona después de una inundación, con distancia y minutos a pie
+// aproximados. Prioriza los de atención general; si no hay ninguno, muestra
+// las demás clínicas (nunca laboratorios ni servicios especializados).
+export function establecimientosCercanos(puntos, origen, cuantos = 5) {
+  if (!origen || !Array.isArray(puntos)) return [];
+  const candidatos = puntos.filter((p) => p.salud && !NO_DERIVAR.test(p.nombre ?? ""));
+  const generales = candidatos.filter(
+    (p) => ATENCION_GENERAL.test(p.nombre ?? "") || p.etiqueta === "Hospital"
+  );
+  return (generales.length ? generales : candidatos)
+    .map((p) => {
+      const km = distanciaKm(origen, p);
+      return { ...p, km, minutos: minutosAPie(km) };
+    })
+    .sort((a, b) => a.km - b.km)
+    .slice(0, cuantos);
+}

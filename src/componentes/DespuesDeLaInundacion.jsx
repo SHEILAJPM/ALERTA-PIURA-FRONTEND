@@ -75,6 +75,13 @@ function DespuesDeLaInundacion() {
         >
           Reportar agua estancada
         </Link>
+        <Link
+          to="/salud"
+          className="pa-tocable inline-flex items-center justify-center min-h-[48px] px-5 rounded-full font-bold"
+          style={{ backgroundColor: "var(--color-primary-soft)", color: "var(--color-primary)" }}
+        >
+          Postas cercanas y cuidados
+        </Link>
         <BotonEscuchar texto={textoVoz} />
       </div>
     </section>
