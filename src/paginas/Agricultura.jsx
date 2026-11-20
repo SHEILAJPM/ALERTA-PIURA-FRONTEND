@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Beef, Building2, CloudRain, Sprout, Sun, Waves, Wheat } from "lucide-react";
 import BotonEscuchar from "../componentes/BotonEscuchar";
+import { registrarUso } from "../utilidades/api";
 
 // Recomendaciones para agricultores y criadores de animales de Piura frente
 // a lluvias y desbordes. Orientación general y práctica: no indica productos
@@ -142,6 +143,8 @@ function Bloque({ titulo, children, className = "" }) {
 }
 
 function Agricultura() {
+  // Indicador ODS 2.4: cuántas personas consultan estas recomendaciones.
+  useEffect(() => registrarUso("agricultura", "visita"), []);
   const [cultivo, setCultivo] = useState("arroz");
   const elegido = CULTIVOS.find((c) => c.id === cultivo);
 

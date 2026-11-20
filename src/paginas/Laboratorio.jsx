@@ -4,6 +4,7 @@ import GraficoTramos from "../componentes/laboratorio/GraficoTramos";
 import CiudadPiura3D from "../componentes/laboratorio/CiudadPiura3D";
 import { simularRio, aContrato, ESCENARIOS } from "../utilidades/motorRio";
 import { esAppNativa } from "../utilidades/plataforma";
+import { registrarUso } from "../utilidades/api";
 import {
   leerSimulacion,
   valorEn,
@@ -598,6 +599,8 @@ async function exportarJSON(contrato, nombre) {
 }
 
 function Laboratorio() {
+  // Indicador ODS 4.7: sesiones del Laboratorio (y cuántas reproducen un escenario).
+  useEffect(() => registrarUso("laboratorio", "visita"), []);
   const [modo, setModo] = useState("crear"); // crear | archivo
   const [escenario, setEscenario] = useState("extrema");
   const [params, setParams] = useState({ ...ESCENARIOS.extrema, acoplado: true });
@@ -670,12 +673,14 @@ function Laboratorio() {
   }
 
   function alCargar(resultado) {
+    registrarUso("laboratorio", "simulacion");
     setCargado(resultado);
     setT(null);
     setReproduciendo(false);
   }
 
   function alternar() {
+    if (!reproduciendo) registrarUso("laboratorio", "simulacion");
     if (!reproduciendo && tActual >= duracion) setT(0);
     else if (t === null) setT(tActual);
     setReproduciendo((r) => !r);

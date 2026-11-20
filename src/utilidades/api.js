@@ -285,6 +285,20 @@ export function getResumenSalud(dias = 14) {
   return apiFetch(`/api/salud/reportes/resumen${query({ dias })}`);
 }
 
+// Conteo anónimo de uso de contenidos educativos (indicadores ODS 2.4 y 4.7):
+// una vez por sesión del navegador, así recargar la página no infla la cifra.
+// Nunca bloquea ni muestra errores: si falla, simplemente no se cuenta.
+export function registrarUso(recurso, accion) {
+  const clave = `piura-alerta-uso-${recurso}-${accion}`;
+  try {
+    if (sessionStorage.getItem(clave)) return;
+    sessionStorage.setItem(clave, "1");
+  } catch {
+    // sin sessionStorage: se cuenta igual
+  }
+  enviar("/api/uso", "POST", { recurso, accion }).catch(() => {});
+}
+
 export function getIndicadoresODS() {
   return apiFetch("/api/impacto/ods");
 }
