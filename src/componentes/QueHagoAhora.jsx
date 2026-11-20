@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import AnilloPuntaje from "./AnilloPuntaje";
+import BotonEscuchar from "./BotonEscuchar";
 import HojaRiesgo from "./HojaRiesgo";
 import Skeleton from "./Skeleton";
 import { useRiesgo } from "../ganchos/useRiesgo";
@@ -201,6 +202,11 @@ function QueHagoAhora({ sensorCodigo, nombreSensor, estadoRio }) {
               >
                 {accion.boton} →
               </Link>
+              <BotonEscuchar
+                texto={`${accion.titulo}. ${accion.texto}`}
+                tono={accion.urgente ? "oscuro" : "claro"}
+                className="mt-3 sm:mt-0 sm:ml-3"
+              />
             </div>
           </section>
         </div>

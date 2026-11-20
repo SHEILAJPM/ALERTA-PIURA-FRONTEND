@@ -1,4 +1,5 @@
 import Icon from "./Icon";
+import BotonEscuchar from "./BotonEscuchar";
 
 const CONTENIDO = {
   normal: {
@@ -56,6 +57,7 @@ function AlertCard({ estado = "normal" }) {
           <p className="text-sm mt-1" style={{ color: "var(--color-text-muted)" }}>
             {actual.detalle}
           </p>
+          <BotonEscuchar texto={`${actual.titulo}. ${actual.detalle}`} className="mt-3" />
         </div>
       </div>
     </div>
