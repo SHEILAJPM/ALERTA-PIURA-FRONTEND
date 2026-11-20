@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMapEvents } from "react-leaflet";
+import { useEffect, useMemo } from "react";
+import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useZonasRiesgo } from "../ganchos/useZonasRiesgo";
@@ -87,6 +87,21 @@ function CapturarToque({ onElegir }) {
       onElegir({ lat: Number(evento.latlng.lat.toFixed(5)), lon: Number(evento.latlng.lng.toFixed(5)) });
     },
   });
+  return null;
+}
+
+// Si el punto elegido (por ejemplo, una dirección buscada) queda fuera de lo
+// que se ve, el mapa vuela hasta él. Un toque en el mapa ya está a la vista,
+// así que no lo mueve.
+function CentrarEnPunto({ punto }) {
+  const mapa = useMap();
+  const lat = punto?.lat;
+  const lon = punto?.lon;
+  useEffect(() => {
+    if (lat === undefined || lon === undefined) return;
+    if (mapa.getBounds().pad(-0.1).contains([lat, lon])) return;
+    mapa.flyTo([lat, lon], Math.max(mapa.getZoom(), 15), { duration: 0.8 });
+  }, [mapa, lat, lon]);
   return null;
 }
 
@@ -211,6 +226,7 @@ function RiesgoMap({ altura = "520px", mostrarLeyenda = true, puntoAnalizado = n
             <TileLayer key={theme} attribution={atribucionMapa} url={urlTiles} />
 
             {onElegirPunto && <CapturarToque onElegir={onElegirPunto} />}
+            {onElegirPunto && <CentrarEnPunto punto={puntoAnalizado} />}
             {puntoAnalizado && (
               <Marker
                 position={[puntoAnalizado.lat, puntoAnalizado.lon]}

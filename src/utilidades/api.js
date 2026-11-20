@@ -112,6 +112,12 @@ export function eliminarAlbergue(id) {
   return enviar(`/api/albergues/${id}`, "DELETE");
 }
 
+// Dirección escrita -> [{ nombre, lat, lon }] dentro de Piura (OpenStreetMap
+// vía el backend).
+export function buscarDireccion(texto) {
+  return apiFetch(`/api/geocodificar${query({ q: texto })}`);
+}
+
 export function getZonasRiesgo() {
   return apiFetch("/api/zonas-riesgo");
 }

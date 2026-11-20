@@ -2,6 +2,7 @@ import { useState } from "react";
 import AnilloPuntaje from "./AnilloPuntaje";
 import HojaRiesgo from "./HojaRiesgo";
 import Skeleton from "./Skeleton";
+import BuscadorDireccion from "./BuscadorDireccion";
 import { useResource } from "../ganchos/useResource";
 import { getRiesgo } from "../utilidades/api";
 import { ESTILO_NIVEL } from "../utilidades/accionRecomendada";
@@ -9,7 +10,7 @@ import { SENSOR_POR_DEFECTO } from "../constantes/sensores";
 
 // "Analizar mi zona": puntaje de riesgo del punto que la persona tocó en el
 // mapa (o su ubicación), con la misma explicación factor por factor de Inicio.
-function AnalisisPunto({ punto, onUsarMiUbicacion, buscandoUbicacion, errorUbicacion }) {
+function AnalisisPunto({ punto, onUsarMiUbicacion, onElegirDireccion, buscandoUbicacion, errorUbicacion }) {
   const [hojaAbierta, setHojaAbierta] = useState(false);
   const {
     data: riesgo,
@@ -39,13 +40,14 @@ function AnalisisPunto({ punto, onUsarMiUbicacion, buscandoUbicacion, errorUbica
           id="analisis-titulo"
           className="scroll-mt-28 font-display text-2xl font-extrabold leading-tight mt-1"
         >
-          {punto ? "Riesgo en el punto elegido" : "Toca el mapa donde vives"}
+          {punto ? "Riesgo en el punto elegido" : "¿Dónde vives?"}
         </h3>
       </div>
 
       {!punto ? (
         <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
-          Te mostramos el riesgo de inundación de ese lugar y el albergue más cercano.
+          Escribe tu dirección, toca el mapa o usa tu ubicación. Te mostramos el riesgo de inundación de ese
+          lugar y el albergue más cercano.
         </p>
       ) : loading ? (
         <Skeleton className="h-28 w-full rounded-2xl" />
@@ -84,6 +86,7 @@ function AnalisisPunto({ punto, onUsarMiUbicacion, buscandoUbicacion, errorUbica
         </>
       )}
 
+      {onElegirDireccion && <BuscadorDireccion onElegir={onElegirDireccion} />}
       <button
         type="button"
         onClick={onUsarMiUbicacion}

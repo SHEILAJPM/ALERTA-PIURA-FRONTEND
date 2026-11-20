@@ -63,7 +63,8 @@ function Mapa() {
         </p>
         <h1 className="text-[34px] md:text-[40px] leading-[1.08] mt-1">¿Cómo está tu zona?</h1>
         <p className="mt-2 max-w-2xl text-[15px]" style={{ color: "var(--color-text-muted)" }}>
-          Toca el mapa donde vives para ver su riesgo de inundación y el albergue más cercano con espacio.
+          Escribe tu dirección o toca el mapa donde vives para ver su riesgo de inundación y el albergue más
+          cercano con espacio.
         </p>
       </section>
 
@@ -77,6 +78,10 @@ function Mapa() {
           <AnalisisPunto
             punto={punto}
             onUsarMiUbicacion={usarMiUbicacion}
+            onElegirDireccion={(nueva) => {
+              guardarUbicacion(nueva);
+              elegirPunto(nueva);
+            }}
             buscandoUbicacion={buscando}
             errorUbicacion={errorUbicacion}
           />
