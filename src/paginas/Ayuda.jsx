@@ -61,7 +61,7 @@ const SECCIONES = [
         ],
       },
     ],
-    enlaces: [],
+    enlaces: [{ to: "/agricultura", texto: "Ver todas las recomendaciones" }],
   },
   {
     id: "negocio",

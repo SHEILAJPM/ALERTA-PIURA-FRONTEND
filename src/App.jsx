@@ -47,6 +47,7 @@ const DatosAbiertos = React.lazy(() => import("./paginas/DatosAbiertos"));
 const Laboratorio = React.lazy(() => import("./paginas/Laboratorio"));
 const Salud = React.lazy(() => import("./paginas/Salud"));
 const Ayuda = React.lazy(() => import("./paginas/Ayuda"));
+const Agricultura = React.lazy(() => import("./paginas/Agricultura"));
 const VigilanciaSalud = React.lazy(() => import("./paginas/admin/VigilanciaSalud"));
 const ChequeosSeguridad = React.lazy(() => import("./paginas/admin/ChequeosSeguridad"));
 const Configuracion = React.lazy(() => import("./paginas/admin/Configuracion"));
@@ -88,6 +89,7 @@ function App() {
                   <Route path="/laboratorio" element={conSuspenso(<Laboratorio />)} />
                   <Route path="/salud" element={conSuspenso(<Salud />)} />
                   <Route path="/ayuda" element={conSuspenso(<Ayuda />)} />
+                  <Route path="/agricultura" element={conSuspenso(<Agricultura />)} />
                   <Route element={<ProtectedRoute />}>
                     <Route path="/perfil" element={<MiPerfil />} />
                     <Route path="/mi-poliza" element={<MiPoliza />} />

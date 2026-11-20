@@ -60,7 +60,7 @@ describe("situaciones de crisis: chacra, negocio y ayuda", () => {
   });
 
   it("con riesgo bajo, invita a prepararse y lleva a la página de ayuda", () => {
-    expect(elegirAccion({ situacion: "campo", nivel: "bajo" }).enlace).toBe("/ayuda#campo");
+    expect(elegirAccion({ situacion: "campo", nivel: "bajo" }).enlace).toBe("/agricultura");
     expect(elegirAccion({ situacion: "negocio", nivel: "bajo" }).enlace).toBe("/ayuda#negocio");
   });
 

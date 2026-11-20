@@ -54,7 +54,7 @@ const ACCIONES = {
     texto:
       "Lleva los animales a zona alta, sube semillas, abono y herramientas, y no cruces canales ni acequias crecidas. Tu vida va primero.",
     boton: "Qué hacer con mi chacra",
-    enlace: "/ayuda#campo",
+    enlace: "/agricultura",
     urgente: false,
   },
   campo_bajo: {
@@ -62,7 +62,7 @@ const ACCIONES = {
     texto:
       "Limpia drenes y acequias y ten pensado un lugar alto para tus animales. Si pierdes la cosecha, repórtalo en la Agencia Agraria.",
     boton: "Qué hacer con mi chacra",
-    enlace: "/ayuda#campo",
+    enlace: "/agricultura",
     urgente: false,
   },
   negocio_alto: {
