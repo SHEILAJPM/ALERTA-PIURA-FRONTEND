@@ -3,7 +3,6 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   Backpack,
   ChevronRight,
-  Database,
   FlaskConical,
   HandHeart,
   HeartPulse,
@@ -18,6 +17,7 @@ import {
   Menu,
   ShieldCheck,
   Smartphone,
+  Sprout,
   Sparkles,
   UserRound,
   X,
@@ -57,9 +57,9 @@ const LINKS_BASE = [
   { to: "/mochila", label: "Mi mochila", icono: Backpack },
   { to: "/salud", label: "Salud", icono: HeartPulse },
   { to: "/ayuda", label: "Ayuda tras el fenómeno", icono: HandHeart },
+  { to: "/agricultura", label: "Agricultores", icono: Sprout },
   { to: "/historial", label: "Historial", icono: History },
   { to: "/seguro", label: "Seguro", icono: ShieldCheck },
-  { to: "/datos-abiertos", label: "Datos abiertos", icono: Database },
   { to: "/laboratorio", label: "Laboratorio", icono: FlaskConical },
   { to: "/app", label: "Descargar app", icono: Smartphone },
 ];
