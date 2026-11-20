@@ -3,24 +3,29 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RIO_PIURA, PUENTES_PIURA } from "../../datos/piuraGeo";
 import { useTheme } from "../../contexto/ThemeContext";
+import { CAUCE } from "../../utilidades/motorRio";
 
-// Ciudad de Piura en 3D, ESTILIZADA, para el Laboratorio de simulación.
-// Real: el trazado del río Piura y sus puentes (OpenStreetMap). Inventado: el
-// relieve, las manzanas y los edificios. El agua sube según el motor
-// conceptual L0: NO indica qué zonas reales se inundarían.
+// Piura y Castilla en 3D para el Laboratorio de simulación.
+// REAL (OpenStreetMap, ODbL): trazado del río, puentes, contorno de ~10 000
+// edificios, calles y áreas verdes (public/datos/piura-ciudad.json).
+// ESTIMADO: la altura de los edificios (OSM casi no la registra en Piura) y
+// el relieve. El agua sube según el motor conceptual L0: NO es un mapa de
+// inundación ni indica qué zonas reales se inundarían.
 //
-// Unidades: 1 unidad de escena = 20 m. Alturas del terreno y del agua
-// exageradas x6 para que se lean; los edificios, x2,5.
+// Unidades: 1 unidad de escena = 20 m. Terreno, agua y edificios exagerados x2,5 en
+// altura, por igual, para que se lean.
 
 const ESCALA = 1 / 20;
-const EXAG_TERRENO = 6;
+// Misma exageración para terreno, agua y edificios: así la profundidad del
+// agua se lee en proporción a las casas (1 m de agua = un tercio de una casa).
+const EXAG_TERRENO = 2.5;
 const EXAG_EDIFICIO = 2.5;
 const ANCHO_M = 8400;
 const LARGO_M = 9600;
-const SEG_X = 210;
-const SEG_Z = 240;
-const MEDIO_CAUCE = 55; // m
+// Mismo cauce que el motor de simulación, para que agua y orillas coincidan.
+const MEDIO_CAUCE = CAUCE.ancho / 2; // m
 const FIN_RIBERA = 85; // m
+const URL_CIUDAD = "/datos/piura-ciudad.json";
 
 // ---------- Geometría del río (en metros) ----------
 const largos = [0];
@@ -47,21 +52,26 @@ function cercaniaRio(x, z) {
   return mejor;
 }
 
-// Ruido suave determinista para que el terreno no sea plano.
 function ruido(x, z) {
   return Math.sin(x * 0.0021 + 1.3) * Math.cos(z * 0.0017) * 0.5 + Math.sin((x + z) * 0.0009) * 0.5;
 }
 
 const cotaLecho = (f) => 4 * (1 - f); // el norte está unos metros más alto
 
+// Relieve estimado: cauce, ribera y planicie que sube rápido lejos del río
+// (un desborde ocupa la franja ribereña, no barrios enteros).
 function cotaTerreno(x, z, d, f) {
   let local;
   if (d < MEDIO_CAUCE) local = 0.3 * (d / MEDIO_CAUCE) ** 2;
-  else if (d < FIN_RIBERA) local = 0.3 + 3.1 * ((d - MEDIO_CAUCE) / (FIN_RIBERA - MEDIO_CAUCE));
-  // Sube rápido lejos del cauce: un desborde ocupa la franja ribereña, no barrios enteros.
-  else local = 3.4 + 7 * Math.min(1, (d - FIN_RIBERA) / 900) ** 0.6 + ruido(x, z) * 0.35;
+  else if (d < FIN_RIBERA)
+    local = 0.3 + (CAUCE.ribera - 0.3) * ((d - MEDIO_CAUCE) / (FIN_RIBERA - MEDIO_CAUCE));
+  else local = CAUCE.ribera + 7 * Math.min(1, (d - FIN_RIBERA) / 900) ** 0.6 + ruido(x, z) * 0.2;
   return cotaLecho(f) + local;
 }
+const sueloEn = (x, z) => {
+  const { d, f } = cercaniaRio(x, z);
+  return cotaTerreno(x, z, d, f);
+};
 
 // Nivel del agua (m sobre el lecho) en la posición f, interpolando entre los
 // centros de los tramos ALTO (1/6), MEDIO (1/2) y BAJO (5/6).
@@ -73,7 +83,11 @@ function nivelEn(f, niveles) {
   return niveles[k] + (niveles[k + 1] - niveles[k]) * ((f - c[k]) / (c[k + 1] - c[k]));
 }
 
-// Números pseudoaleatorios con semilla: la ciudad sale igual en cada visita.
+function hash(n) {
+  const x = Math.sin(n * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+}
+
 function generador(semilla) {
   let s = semilla;
   return () => {
@@ -82,14 +96,70 @@ function generador(semilla) {
   };
 }
 
-function etiqueta(texto, { color = "#0d2e57", fondo = "rgba(255,255,255,0.85)", tamano = 34 } = {}) {
+// "alta" en computadoras; "liviana" en celulares o equipos modestos.
+function calidadSugerida() {
+  if (typeof window === "undefined") return "liviana";
+  const nucleos = navigator.hardwareConcurrency || 8;
+  const memoria = navigator.deviceMemory || 8;
+  return window.innerWidth < 768 || nucleos <= 4 || memoria <= 4 ? "liviana" : "alta";
+}
+
+// ---------- Paletas ----------
+function paleta(oscuro) {
+  return oscuro
+    ? {
+        cielo: "#0a1624",
+        nublado: "#1b2533",
+        arena: "#3b3326",
+        arenaOsc: "#2c271d",
+        ribera: "#2a3a26",
+        lecho: "#2d2a24",
+        verde: "#2f4a2c",
+        calles: ["#6b6f76", "#5b5f66", "#4d4a43"],
+        paredes: [
+          ["#6b6257", "#5f574d", "#746a5e", "#585148"],
+          ["#4f6070", "#5a6878"],
+          ["#6d6650", "#62604f"],
+          ["#d8d2c4"],
+          ["#4a4a4a", "#55524c"],
+        ],
+        techo: "#7a7266",
+        aguaClara: "#3d6b6a",
+        aguaTurbia: "#7a5a32",
+        espuma: "#e9dcc2",
+      }
+    : {
+        cielo: "#e8f1fb",
+        nublado: "#b9c1ca",
+        arena: "#e3d3ad",
+        arenaOsc: "#cfb98f",
+        ribera: "#9db27a",
+        lecho: "#a8946b",
+        verde: "#8fb36a",
+        calles: ["#6f737a", "#878a90", "#b3a78e"],
+        paredes: [
+          ["#efe2c8", "#e7d3b0", "#f4ebdc", "#d9c09a", "#e9d8bc", "#f1e3cc"],
+          ["#c9d6e3", "#d8e1ea", "#bccbd8"],
+          ["#e8dcae", "#dcd2a4"],
+          ["#fbf7ee"],
+          ["#c7c3bb", "#b9b4aa"],
+        ],
+        techo: "#d8d2c6",
+        aguaClara: "#6f8f78",
+        aguaTurbia: "#a07a46",
+        espuma: "#fff6e4",
+      };
+}
+
+function etiqueta(texto, { color = "#0d2e57", fondo = "rgba(255,255,255,0.88)", tamano = 34 } = {}) {
   const lienzo = document.createElement("canvas");
   const ctx = lienzo.getContext("2d");
-  ctx.font = `800 ${tamano}px "Plus Jakarta Sans", system-ui, sans-serif`;
+  const fuente = `800 ${tamano}px "Plus Jakarta Sans", system-ui, sans-serif`;
+  ctx.font = fuente;
   const ancho = Math.ceil(ctx.measureText(texto).width) + 28;
   lienzo.width = ancho;
   lienzo.height = tamano + 22;
-  ctx.font = `800 ${tamano}px "Plus Jakarta Sans", system-ui, sans-serif`;
+  ctx.font = fuente;
   ctx.fillStyle = fondo;
   ctx.beginPath();
   if (ctx.roundRect) ctx.roundRect(0, 0, ancho, lienzo.height, lienzo.height / 2);
@@ -109,22 +179,24 @@ function etiqueta(texto, { color = "#0d2e57", fondo = "rgba(255,255,255,0.85)", 
   return sprite;
 }
 
-function texturaFlujo() {
+function texturaFlujo(color) {
   const lienzo = document.createElement("canvas");
   lienzo.width = 64;
   lienzo.height = 256;
   const ctx = lienzo.getContext("2d");
   const azar = generador(7);
-  for (let i = 0; i < 70; i++) {
+  const c = new THREE.Color(color);
+  const rgb = `${Math.round(c.r * 255)},${Math.round(c.g * 255)},${Math.round(c.b * 255)}`;
+  for (let i = 0; i < 80; i++) {
     const x = azar() * 64;
     const y = azar() * 256;
     const largo = 12 + azar() * 40;
     const grad = ctx.createLinearGradient(0, y, 0, y + largo);
-    grad.addColorStop(0, "rgba(255,255,255,0)");
-    grad.addColorStop(0.5, `rgba(255,255,255,${0.35 + azar() * 0.4})`);
-    grad.addColorStop(1, "rgba(255,255,255,0)");
+    grad.addColorStop(0, `rgba(${rgb},0)`);
+    grad.addColorStop(0.5, `rgba(${rgb},${0.35 + azar() * 0.45})`);
+    grad.addColorStop(1, `rgba(${rgb},0)`);
     ctx.fillStyle = grad;
-    ctx.fillRect(x, y, 1.5 + azar() * 1.5, largo);
+    ctx.fillRect(x, y, 1.5 + azar() * 2, largo);
   }
   const t = new THREE.CanvasTexture(lienzo);
   t.wrapS = THREE.RepeatWrapping;
@@ -132,57 +204,204 @@ function texturaFlujo() {
   return t;
 }
 
-function construirEscena(contenedor, { oscuro, reducirMovimiento }) {
-  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "low-power" });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+// ---------- Ciudad real: edificios extruidos en una sola geometría ----------
+function geometriaEdificios(edificios, colores) {
+  const pos = [];
+  const nor = [];
+  const col = [];
+  const cTecho = new THREE.Color(colores.techo);
+  const c = new THREE.Color();
+  edificios.forEach((e, n) => {
+    const [altura, tipo] = e;
+    let pts = [];
+    for (let i = 2; i < e.length; i += 2) pts.push([e[i], e[i + 1]]);
+    // Sentido antihorario (visto desde arriba) para que las normales miren afuera.
+    let s = 0;
+    for (let i = 0; i < pts.length; i++) {
+      const [x1, z1] = pts[i];
+      const [x2, z2] = pts[(i + 1) % pts.length];
+      s += x1 * z2 - x2 * z1;
+    }
+    if (s > 0) pts = pts.reverse();
+    const cx = pts.reduce((a, p) => a + p[0], 0) / pts.length;
+    const cz = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+    const y0 = sueloEn(cx, cz) * ESCALA * EXAG_TERRENO;
+    const y1 = y0 + altura * ESCALA * EXAG_EDIFICIO;
+    const tonos = colores.paredes[tipo] ?? colores.paredes[0];
+    c.set(tonos[Math.floor(hash(n + 1) * tonos.length)]);
+    // Paredes
+    for (let i = 0; i < pts.length; i++) {
+      const [ax, az] = pts[i];
+      const [bx, bz] = pts[(i + 1) % pts.length];
+      const dx = bx - ax;
+      const dz = bz - az;
+      const L = Math.hypot(dx, dz) || 1;
+      const nx = dz / L;
+      const nz = -dx / L;
+      const A = [ax * ESCALA, y0, az * ESCALA];
+      const B = [bx * ESCALA, y0, bz * ESCALA];
+      const Ct = [bx * ESCALA, y1, bz * ESCALA];
+      const D = [ax * ESCALA, y1, az * ESCALA];
+      for (const v of [A, B, Ct, A, Ct, D]) {
+        pos.push(...v);
+        nor.push(nx, 0, nz);
+        col.push(c.r, c.g, c.b);
+      }
+    }
+    // Techo plano (los techos de Piura son casi todos azoteas)
+    const contorno = pts.map(([x, z]) => new THREE.Vector2(x, z));
+    const tris = THREE.ShapeUtils.triangulateShape(contorno, []);
+    for (const tri of tris) {
+      for (const k of [tri[0], tri[2], tri[1]]) {
+        pos.push(pts[k][0] * ESCALA, y1, pts[k][1] * ESCALA);
+        nor.push(0, 1, 0);
+        col.push(cTecho.r, cTecho.g, cTecho.b);
+      }
+    }
+  });
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute("normal", new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+  return g;
+}
+
+// Calles como cintas apoyadas en el terreno; ancho según la importancia.
+const ANCHO_CALLE = { 1: 16, 2: 11, 3: 6 };
+function geometriaCalles(calles, colores) {
+  const pos = [];
+  const col = [];
+  const c = new THREE.Color();
+  for (const calle of calles) {
+    const clase = calle[0];
+    const medio = ANCHO_CALLE[clase] / 2;
+    c.set(colores.calles[clase - 1]);
+    for (let i = 1; i + 3 < calle.length; i += 2) {
+      const ax = calle[i];
+      const az = calle[i + 1];
+      const bx = calle[i + 2];
+      const bz = calle[i + 3];
+      const dx = bx - ax;
+      const dz = bz - az;
+      const L = Math.hypot(dx, dz);
+      if (L < 0.5) continue;
+      const nx = (-dz / L) * medio;
+      const nz = (dx / L) * medio;
+      const ya = (sueloEn(ax, az) + 0.45) * ESCALA * EXAG_TERRENO;
+      const yb = (sueloEn(bx, bz) + 0.45) * ESCALA * EXAG_TERRENO;
+      const v = [
+        [(ax + nx) * ESCALA, ya, (az + nz) * ESCALA],
+        [(ax - nx) * ESCALA, ya, (az - nz) * ESCALA],
+        [(bx - nx) * ESCALA, yb, (bz - nz) * ESCALA],
+        [(bx + nx) * ESCALA, yb, (bz + nz) * ESCALA],
+      ];
+      for (const k of [0, 1, 2, 0, 2, 3]) {
+        pos.push(...v[k]);
+        col.push(c.r, c.g, c.b);
+      }
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+  g.computeVertexNormals();
+  return g;
+}
+
+function geometriaVerdes(verdes) {
+  const pos = [];
+  for (const v of verdes) {
+    const pts = [];
+    for (let i = 0; i < v.length; i += 2) pts.push([v[i], v[i + 1]]);
+    const cx = pts.reduce((a, p) => a + p[0], 0) / pts.length;
+    const cz = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+    const y = (sueloEn(cx, cz) + 0.35) * ESCALA * EXAG_TERRENO;
+    const tris = THREE.ShapeUtils.triangulateShape(
+      pts.map(([x, z]) => new THREE.Vector2(x, z)),
+      []
+    );
+    for (const tri of tris) for (const k of tri) pos.push(pts[k][0] * ESCALA, y, pts[k][1] * ESCALA);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.computeVertexNormals();
+  return g;
+}
+
+// En calidad liviana: todo el centro con detalle y la periferia simplificada.
+function filtrarCiudad(ciudad, calidad) {
+  if (calidad === "alta") return ciudad;
+  const CENTRO = [150, 0];
+  const lejos = (x, z, r) => Math.hypot(x - CENTRO[0], z - CENTRO[1]) > r;
+  const edificios = ciudad.edificios.filter((e) => {
+    if (!lejos(e[2], e[3], 1600)) return true;
+    let a = 0;
+    for (let i = 2; i + 3 < e.length; i += 2) a += e[i] * e[i + 3] - e[i + 2] * e[i + 1];
+    return Math.abs(a) / 2 > 350; // fuera del centro, solo los edificios grandes
+  });
+  const calles = ciudad.calles.filter((c) => c[0] <= 2 || !lejos(c[1], c[2], 1300));
+  return { ...ciudad, edificios, calles, rotulos: ciudad.rotulos.slice(0, 6) };
+}
+
+function construirEscena(contenedor, { oscuro, reducirMovimiento, ciudad, calidad }) {
+  const alta = calidad === "alta";
+  const colores = paleta(oscuro);
+  const renderer = new THREE.WebGLRenderer({
+    antialias: alta,
+    powerPreference: alta ? "high-performance" : "low-power",
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, alta ? 1.75 : 1));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   contenedor.appendChild(renderer.domElement);
 
   const escena = new THREE.Scene();
-  const colorCielo = new THREE.Color(oscuro ? "#0a1624" : "#eaf2fb");
-  escena.background = colorCielo;
-  escena.fog = new THREE.Fog(colorCielo, 320, 820);
+  const cielo = new THREE.Color(colores.cielo);
+  const nublado = new THREE.Color(colores.nublado);
+  escena.background = cielo.clone();
+  escena.fog = new THREE.Fog(cielo.clone(), 260, 760);
 
   const camara = new THREE.PerspectiveCamera(42, 1, 1, 3000);
-  camara.position.set(-170, 150, 210);
+  camara.position.set(-95, 78, 125);
   const controles = new OrbitControls(camara, renderer.domElement);
-  controles.target.set(30, 0, 0);
+  controles.target.set(8, 0, -6);
   controles.enableDamping = true;
   controles.maxPolarAngle = 1.32;
-  controles.minDistance = 50;
-  controles.maxDistance = 720;
+  controles.minDistance = 25;
+  controles.maxDistance = 650;
   controles.autoRotate = !reducirMovimiento;
-  controles.autoRotateSpeed = 0.35;
+  controles.autoRotateSpeed = 0.3;
   controles.addEventListener("start", () => (controles.autoRotate = false));
 
-  escena.add(
-    new THREE.HemisphereLight(
-      oscuro ? "#6f86a8" : "#fff6e0",
-      oscuro ? "#1a2230" : "#c8b48a",
-      oscuro ? 0.7 : 1.0
-    )
+  const hemi = new THREE.HemisphereLight(
+    oscuro ? "#6f86a8" : "#fff6e0",
+    oscuro ? "#1a2230" : "#c8b48a",
+    oscuro ? 0.75 : 1.05
   );
-  const sol = new THREE.DirectionalLight(oscuro ? "#9fb7e0" : "#fff1d0", oscuro ? 0.8 : 1.5);
+  escena.add(hemi);
+  const sol = new THREE.DirectionalLight(oscuro ? "#9fb7e0" : "#fff1d0", oscuro ? 0.8 : 1.45);
   sol.position.set(-220, 320, 160);
   escena.add(sol);
+  const intensidadSol = sol.intensity;
 
   const desechables = [];
-  const registrar = (...cosas) => {
-    desechables.push(...cosas);
-    return cosas[0];
+  const registrar = (cosa) => {
+    desechables.push(cosa);
+    return cosa;
   };
 
   // ----- Terreno -----
-  const geoTerreno = registrar(new THREE.PlaneGeometry(ANCHO_M * ESCALA, LARGO_M * ESCALA, SEG_X, SEG_Z));
+  const segX = alta ? 210 : 120;
+  const segZ = alta ? 240 : 137;
+  const geoTerreno = registrar(new THREE.PlaneGeometry(ANCHO_M * ESCALA, LARGO_M * ESCALA, segX, segZ));
   geoTerreno.rotateX(-Math.PI / 2);
   const pos = geoTerreno.attributes.position;
   const n = pos.count;
   const info = { d: new Float32Array(n), f: new Float32Array(n), suelo: new Float32Array(n) };
-  const colores = new Float32Array(n * 3);
-  const cArena = new THREE.Color(oscuro ? "#3b3326" : "#e3d3ad");
-  const cArenaOsc = new THREE.Color(oscuro ? "#2c271d" : "#cbb48a");
-  const cRibera = new THREE.Color(oscuro ? "#2a3a26" : "#9db27a");
-  const cLecho = new THREE.Color(oscuro ? "#2d2a24" : "#a8946b");
+  const coloresT = new Float32Array(n * 3);
+  const cArena = new THREE.Color(colores.arena);
+  const cArenaOsc = new THREE.Color(colores.arenaOsc);
+  const cRibera = new THREE.Color(colores.ribera);
+  const cLecho = new THREE.Color(colores.lecho);
   const tmp = new THREE.Color();
   for (let i = 0; i < n; i++) {
     const x = pos.getX(i) / ESCALA;
@@ -194,21 +413,21 @@ function construirEscena(contenedor, { oscuro, reducirMovimiento }) {
     info.suelo[i] = suelo;
     pos.setY(i, suelo * ESCALA * EXAG_TERRENO);
     if (d < MEDIO_CAUCE) tmp.copy(cLecho);
-    else if (d < 260) tmp.copy(cRibera).lerp(cArena, Math.max(0, (d - FIN_RIBERA) / 175));
-    else tmp.copy(cArena).lerp(cArenaOsc, ((ruido(x * 3, z * 3) + 1) / 2) * 0.5);
-    colores.set([tmp.r, tmp.g, tmp.b], i * 3);
+    else if (d < 220) tmp.copy(cRibera).lerp(cArena, Math.max(0, (d - FIN_RIBERA) / 135));
+    else tmp.copy(cArena).lerp(cArenaOsc, ((ruido(x * 3, z * 3) + 1) / 2) * 0.45);
+    coloresT.set([tmp.r, tmp.g, tmp.b], i * 3);
   }
-  geoTerreno.setAttribute("color", new THREE.BufferAttribute(colores, 3));
+  geoTerreno.setAttribute("color", new THREE.BufferAttribute(coloresT, 3));
   geoTerreno.computeVertexNormals();
   escena.add(new THREE.Mesh(geoTerreno, registrar(new THREE.MeshLambertMaterial({ vertexColors: true }))));
-  // Alrededores: cuatro franjas que rodean el terreno (sin pasar por encima del
-  // cauce) a la altura aproximada de sus bordes, para que el corte se pierda
-  // en la neblina en vez de verse como una losa.
+
+  // Alrededores: franjas que rodean el terreno, para que el corte se pierda
+  // en la neblina (sin pasar por encima del cauce).
   const matAlrededor = registrar(new THREE.MeshLambertMaterial({ color: cArena }));
   const medioAncho = (ANCHO_M * ESCALA) / 2;
   const medioLargo = (LARGO_M * ESCALA) / 2;
   const LEJOS = 1600;
-  const yBorde = 10.5 * ESCALA * EXAG_TERRENO;
+  const yBorde = (CAUCE.ribera + 7.5) * ESCALA * EXAG_TERRENO;
   for (const [ancho, largo, x, z] of [
     [LEJOS * 2, LEJOS - medioLargo, 0, -(medioLargo + LEJOS) / 2],
     [LEJOS * 2, LEJOS - medioLargo, 0, (medioLargo + LEJOS) / 2],
@@ -221,31 +440,90 @@ function construirEscena(contenedor, { oscuro, reducirMovimiento }) {
     escena.add(franja);
   }
 
+  // ----- Ciudad real (si cargó) -----
+  if (ciudad) {
+    const datos = filtrarCiudad(ciudad, calidad);
+    const matSobreSuelo = (opciones) =>
+      registrar(
+        new THREE.MeshLambertMaterial({
+          side: THREE.DoubleSide,
+          ...opciones,
+          polygonOffset: true,
+          polygonOffsetFactor: -4,
+          polygonOffsetUnits: -4,
+        })
+      );
+    escena.add(
+      new THREE.Mesh(registrar(geometriaVerdes(datos.verdes)), matSobreSuelo({ color: colores.verde }))
+    );
+    escena.add(
+      new THREE.Mesh(registrar(geometriaCalles(datos.calles, colores)), matSobreSuelo({ vertexColors: true }))
+    );
+    escena.add(
+      new THREE.Mesh(
+        registrar(geometriaEdificios(datos.edificios, colores)),
+        registrar(new THREE.MeshLambertMaterial({ vertexColors: true }))
+      )
+    );
+    for (const [nombre, x, z] of datos.rotulos.filter(([r]) => !/^Auxiliar/i.test(r))) {
+      const r = etiqueta(nombre, { tamano: 24, color: "#ffffff", fondo: "rgba(13,46,87,0.78)" });
+      r.scale.multiplyScalar(0.45);
+      r.position.set(x * ESCALA, (sueloEn(x, z) * EXAG_TERRENO + 30) * ESCALA, z * ESCALA);
+      escena.add(r);
+    }
+  }
+
+  // Escudo de Piura sobre la Plaza de Armas.
+  const yPlaza = sueloEn(0, 0) * ESCALA * EXAG_TERRENO;
+  new THREE.TextureLoader().load(
+    "/images/escudo-piura.png",
+    (textura) => {
+      textura.colorSpace = THREE.SRGBColorSpace;
+      registrar(textura);
+      const escudo = new THREE.Sprite(
+        registrar(new THREE.SpriteMaterial({ map: textura, transparent: true }))
+      );
+      const alto = 9;
+      escudo.scale.set((alto * textura.image.width) / textura.image.height, alto, 1);
+      escudo.position.set(0, yPlaza + 9, 0);
+      escena.add(escudo);
+    },
+    undefined,
+    () => {}
+  );
+  const rPlaza = etiqueta("Plaza de Armas", { tamano: 26 });
+  rPlaza.scale.multiplyScalar(0.6);
+  rPlaza.position.set(0, yPlaza + 16, 0);
+  escena.add(rPlaza);
+
   // ----- Agua: lámina que cubre todo punto más bajo que la superficie -----
-  const geoAgua = registrar(new THREE.PlaneGeometry(ANCHO_M * ESCALA, LARGO_M * ESCALA, SEG_X, SEG_Z));
+  const geoAgua = registrar(new THREE.PlaneGeometry(ANCHO_M * ESCALA, LARGO_M * ESCALA, segX, segZ));
   geoAgua.rotateX(-Math.PI / 2);
+  const cClara = new THREE.Color(colores.aguaClara);
+  const cTurbia = new THREE.Color(colores.aguaTurbia);
   const matAgua = registrar(
     new THREE.MeshPhongMaterial({
-      color: oscuro ? "#2f7be0" : "#2b86d9",
+      color: cClara.clone(),
       transparent: true,
-      opacity: 0.82,
-      shininess: 90,
-      specular: new THREE.Color("#cfe6ff"),
+      opacity: 0.86,
+      shininess: 60,
+      specular: new THREE.Color(oscuro ? "#3b4d66" : "#fff2d8"),
     })
   );
-  const agua = new THREE.Mesh(geoAgua, matAgua);
-  escena.add(agua);
+  escena.add(new THREE.Mesh(geoAgua, matAgua));
 
   function actualizarAgua(niveles) {
     const p = geoAgua.attributes.position;
     for (let i = 0; i < n; i++) {
       const superficie = cotaLecho(info.f[i]) + nivelEn(info.f[i], niveles);
-      // Solo se inunda lo cercano al cauce: evita "charcos" en hondonadas lejanas.
       const mojado = info.d[i] < 700 && superficie > info.suelo[i] + 0.04;
       p.setY(i, (mojado ? superficie : info.suelo[i] - 1.5) * ESCALA * EXAG_TERRENO);
     }
     p.needsUpdate = true;
     geoAgua.computeVertexNormals();
+    // Más crecida = agua más cargada de sedimento (marrón), como el río Piura.
+    const turbidez = Math.min(1, Math.max(0, (Math.max(...niveles) - 1) / (CAUCE.ribera - 1)));
+    matAgua.color.copy(cClara).lerp(cTurbia, turbidez);
   }
 
   // ----- Corriente: cinta con vetas que avanzan aguas abajo -----
@@ -283,9 +561,9 @@ function construirEscena(contenedor, { oscuro, reducirMovimiento }) {
   geoCinta.setAttribute("position", new THREE.BufferAttribute(vCinta, 3));
   geoCinta.setAttribute("uv", new THREE.BufferAttribute(uvCinta, 2));
   geoCinta.setIndex(idx);
-  const texCinta = registrar(texturaFlujo());
+  const texCinta = registrar(texturaFlujo(colores.espuma));
   const matCinta = registrar(
-    new THREE.MeshBasicMaterial({ map: texCinta, transparent: true, opacity: 0.55, depthWrite: false })
+    new THREE.MeshBasicMaterial({ map: texCinta, transparent: true, opacity: 0.6, depthWrite: false })
   );
   const cinta = new THREE.Mesh(geoCinta, matCinta);
   cinta.renderOrder = 2;
@@ -301,109 +579,11 @@ function construirEscena(contenedor, { oscuro, reducirMovimiento }) {
     p.needsUpdate = true;
   }
 
-  // ----- Ciudad estilizada (edificios genéricos, no las manzanas reales) -----
-  const azar = generador(20251119);
-  const lotes = [];
-  for (let x = -ANCHO_M / 2 + 150; x < ANCHO_M / 2 - 150; x += 95) {
-    for (let z = -LARGO_M / 2 + 150; z < LARGO_M / 2 - 150; z += 95) {
-      if (Math.abs(x) < 75 && Math.abs(z) < 75) continue; // Plaza de Armas
-      const { d, f } = cercaniaRio(x, z);
-      if (d < 150) continue; // malecón y riberas sin construir
-      const oeste = x < cercaniaRioX(z);
-      const centro = Math.hypot((x - 200) / (oeste ? 3600 : 2400), z / 4200);
-      const prob = Math.max(0, 1 - centro) * (oeste ? 0.95 : 0.8);
-      if (azar() > prob) continue;
-      const cuantos = 1 + Math.floor(azar() * 3);
-      for (let k = 0; k < cuantos; k++) {
-        const bx = x + (azar() - 0.5) * 60;
-        const bz = z + (azar() - 0.5) * 60;
-        const cerca = Math.max(0, 1 - Math.hypot(bx, bz) / 1800);
-        const pisos = 1 + Math.floor(azar() ** 2 * (2 + 5 * cerca));
-        lotes.push({
-          x: bx,
-          z: bz,
-          w: 16 + azar() * 26,
-          p: 14 + azar() * 24,
-          alto: pisos * 3.2,
-          suelo: cotaTerreno(bx, bz, d, f),
-        });
-      }
-    }
-  }
-  const PALETA = oscuro
-    ? ["#5b5145", "#6a5d4c", "#4f4a44", "#6b6156", "#5d5a55", "#70634f"]
-    : ["#efe4cf", "#e2cfae", "#f6efe3", "#d7bd96", "#eadbc0", "#c9ae86", "#f1e6d6", "#dcc39f"];
-  const geoCaja = registrar(new THREE.BoxGeometry(1, 1, 1));
-  geoCaja.translate(0, 0.5, 0);
-  const edificios = new THREE.InstancedMesh(
-    geoCaja,
-    registrar(new THREE.MeshLambertMaterial()),
-    lotes.length
-  );
-  const m = new THREE.Matrix4();
-  const q = new THREE.Quaternion();
-  const s = new THREE.Vector3();
-  const v = new THREE.Vector3();
-  lotes.forEach((l, i) => {
-    v.set(l.x * ESCALA, l.suelo * ESCALA * EXAG_TERRENO, l.z * ESCALA);
-    s.set(l.w * ESCALA, l.alto * ESCALA * EXAG_EDIFICIO, l.p * ESCALA);
-    m.compose(v, q, s);
-    edificios.setMatrixAt(i, m);
-    edificios.setColorAt(i, tmp.set(PALETA[Math.floor(azar() * PALETA.length)]));
-  });
-  escena.add(edificios);
-
-  // ----- Plaza de Armas, Catedral y escudo -----
-  const sueloPlaza = cotaTerreno(0, 0, cercaniaRio(0, 0).d, cercaniaRio(0, 0).f) * ESCALA * EXAG_TERRENO;
-  const plaza = new THREE.Mesh(
-    registrar(new THREE.BoxGeometry(130 * ESCALA, 0.3, 130 * ESCALA)),
-    registrar(new THREE.MeshLambertMaterial({ color: oscuro ? "#2f4a2c" : "#8fb36a" }))
-  );
-  plaza.position.set(0, sueloPlaza + 0.15, 0);
-  escena.add(plaza);
-  const matCatedral = registrar(new THREE.MeshLambertMaterial({ color: oscuro ? "#cfc6b4" : "#fbf6ec" }));
-  const cuerpo = new THREE.Mesh(
-    registrar(new THREE.BoxGeometry(26 * ESCALA, 16 * ESCALA * 2.5, 48 * ESCALA)),
-    matCatedral
-  );
-  cuerpo.position.set(95 * ESCALA, sueloPlaza + (16 * ESCALA * 2.5) / 2, 0);
-  escena.add(cuerpo);
-  for (const dz of [-20, 20]) {
-    const torre = new THREE.Mesh(
-      registrar(new THREE.BoxGeometry(9 * ESCALA, 30 * ESCALA * 2.5, 9 * ESCALA)),
-      matCatedral
-    );
-    torre.position.set(84 * ESCALA, sueloPlaza + (30 * ESCALA * 2.5) / 2, dz * ESCALA);
-    escena.add(torre);
-    const cupula = new THREE.Mesh(
-      registrar(new THREE.ConeGeometry(6 * ESCALA, 8 * ESCALA * 2.5, 8)),
-      registrar(new THREE.MeshLambertMaterial({ color: "#f2b705" }))
-    );
-    cupula.position.set(84 * ESCALA, sueloPlaza + 30 * ESCALA * 2.5 + (8 * ESCALA * 2.5) / 2, dz * ESCALA);
-    escena.add(cupula);
-  }
-  // Escudo de Piura en la plaza, si el archivo está en public/images/.
-  new THREE.TextureLoader().load(
-    "/images/escudo-piura.png",
-    (textura) => {
-      textura.colorSpace = THREE.SRGBColorSpace;
-      registrar(textura);
-      const material = registrar(new THREE.SpriteMaterial({ map: textura, transparent: true }));
-      const escudo = new THREE.Sprite(material);
-      const alto = 16;
-      escudo.scale.set((alto * textura.image.width) / textura.image.height, alto, 1);
-      escudo.position.set(0, sueloPlaza + 14, 0);
-      escena.add(escudo);
-    },
-    undefined,
-    () => {} // sin escudo: la escena sigue igual
-  );
-
   // ----- Puentes reales -----
-  const matPuente = registrar(new THREE.MeshLambertMaterial({ color: oscuro ? "#8a8f98" : "#9aa0a8" }));
+  const matPuente = registrar(new THREE.MeshLambertMaterial({ color: oscuro ? "#8a8f98" : "#a3a8b0" }));
   PUENTES_PIURA.forEach((p, numero) => {
     const { f } = cercaniaRio(p.x, p.z);
-    const y = (cotaLecho(f) + 4.2) * ESCALA * EXAG_TERRENO;
+    const y = (cotaLecho(f) + CAUCE.ribera + 1.5) * ESCALA * EXAG_TERRENO;
     const puente = new THREE.Mesh(
       registrar(new THREE.BoxGeometry(Math.max(p.largo, 140) * ESCALA, 0.5, (p.peatonal ? 6 : 18) * ESCALA)),
       matPuente
@@ -411,26 +591,21 @@ function construirEscena(contenedor, { oscuro, reducirMovimiento }) {
     puente.position.set(p.x * ESCALA, y, p.z * ESCALA);
     puente.rotation.y = -p.angulo;
     escena.add(puente);
-    const rotulo = etiqueta(p.nombre.replace(/^Puente /, ""), { tamano: 26 });
+    const rotulo = etiqueta(p.nombre, { tamano: 26 });
     rotulo.scale.multiplyScalar(0.5);
     const lado = numero % 2 ? 1 : -1;
-    rotulo.position.set((p.x + lado * 420) * ESCALA, y + 4, p.z * ESCALA);
+    rotulo.position.set((p.x + lado * 330) * ESCALA, y + 5, p.z * ESCALA);
     escena.add(rotulo);
   });
 
-  // ----- Rótulos -----
   for (const [texto, x, z] of [
-    ["PIURA", -1700, -300],
-    ["CASTILLA", 2400, -300],
+    ["PIURA", -1500, -200],
+    ["CASTILLA", 1500, -200],
   ]) {
     const r = etiqueta(texto, { tamano: 40 });
-    r.position.set(x * ESCALA, 32, z * ESCALA);
+    r.position.set(x * ESCALA, 34, z * ESCALA);
     escena.add(r);
   }
-  const rPlaza = etiqueta("Plaza de Armas", { tamano: 26 });
-  rPlaza.scale.multiplyScalar(0.7);
-  rPlaza.position.set(0, sueloPlaza + 26, 0);
-  escena.add(rPlaza);
   [
     ["ALTO", 1 / 6],
     ["MEDIO", 1 / 2],
@@ -445,35 +620,38 @@ function construirEscena(contenedor, { oscuro, reducirMovimiento }) {
       fondo: "rgba(107,79,187,0.92)",
       tamano: 28,
     });
-    r.scale.multiplyScalar(0.75);
-    r.position.set((x + 260) * ESCALA, 20, z * ESCALA);
+    r.scale.multiplyScalar(0.7);
+    r.position.set((x + 380) * ESCALA, 22, z * ESCALA);
     escena.add(r);
   });
 
-  // ----- Lluvia -----
-  const MAX_GOTAS = 2600;
+  // ----- Lluvia: trazos verticales finos (dos vértices por gota) -----
+  const MAX_GOTAS = alta ? 3000 : 1200;
+  const LARGO_GOTA = 1.6;
   const geoLluvia = registrar(new THREE.BufferGeometry());
-  const gotas = new Float32Array(MAX_GOTAS * 3);
+  const gotas = new Float32Array(MAX_GOTAS * 2 * 3);
   const azarLluvia = generador(99);
   for (let i = 0; i < MAX_GOTAS; i++) {
-    gotas.set([(azarLluvia() - 0.5) * 420, azarLluvia() * 140, (azarLluvia() - 0.5) * 480], i * 3);
+    const x = (azarLluvia() - 0.5) * 300;
+    const y = azarLluvia() * 120;
+    const z = (azarLluvia() - 0.5) * 320;
+    gotas.set([x, y, z, x, y + LARGO_GOTA, z], i * 6);
   }
   geoLluvia.setAttribute("position", new THREE.BufferAttribute(gotas, 3));
-  const lluviaPuntos = new THREE.Points(
+  const lluviaPuntos = new THREE.LineSegments(
     geoLluvia,
     registrar(
-      new THREE.PointsMaterial({
-        color: oscuro ? "#9cc4ff" : "#4f7fb8",
-        size: 1.1,
+      new THREE.LineBasicMaterial({
+        color: oscuro ? "#9cc4ff" : "#6f8aa3",
         transparent: true,
-        opacity: 0.6,
+        opacity: 0.55,
       })
     )
   );
   escena.add(lluviaPuntos);
 
   // ----- Estado animable -----
-  const estado = { niveles: [0, 0, 0], lluvia: 0, velocidadFlujo: 0.05 };
+  const estado = { niveles: [0, 0, 0], lluvia: 0, velocidadFlujo: 0.05, nubes: 0 };
   actualizarAgua(estado.niveles);
   actualizarCinta(estado.niveles);
 
@@ -488,7 +666,6 @@ function construirEscena(contenedor, { oscuro, reducirMovimiento }) {
   const observadorTamano = new ResizeObserver(ajustarTamano);
   observadorTamano.observe(contenedor);
 
-  // No dibuja si la vista está fuera de pantalla o la pestaña oculta.
   let visible = true;
   const observadorVista = new IntersectionObserver(([e]) => (visible = e.isIntersecting));
   observadorVista.observe(contenedor);
@@ -500,16 +677,24 @@ function construirEscena(contenedor, { oscuro, reducirMovimiento }) {
     const dt = Math.min(reloj.getDelta(), 0.1);
     if (!visible || document.hidden) return;
     if (!reducirMovimiento) texCinta.offset.y -= dt * estado.velocidadFlujo;
+    // Cielo que se nubla y luz que baja mientras llueve.
+    const objetivoNubes = Math.min(1, estado.lluvia / 60);
+    estado.nubes += (objetivoNubes - estado.nubes) * Math.min(1, dt * 1.5);
+    escena.background.copy(cielo).lerp(nublado, estado.nubes * 0.85);
+    escena.fog.color.copy(escena.background);
+    escena.fog.near = 260 - estado.nubes * 120;
+    sol.intensity = intensidadSol * (1 - estado.nubes * 0.45);
     const cuantas = Math.round(Math.min(1, estado.lluvia / 80) * MAX_GOTAS);
     lluviaPuntos.visible = cuantas > 0;
     if (cuantas > 0) {
-      geoLluvia.setDrawRange(0, cuantas);
+      geoLluvia.setDrawRange(0, cuantas * 2);
       const p = geoLluvia.attributes.position;
-      const caida = reducirMovimiento ? 0 : dt * 90;
+      const caida = reducirMovimiento ? 0 : dt * 85;
       for (let i = 0; i < cuantas; i++) {
-        let y = p.getY(i) - caida;
-        if (y < 0) y += 140;
-        p.setY(i, y);
+        let y = p.getY(i * 2) - caida;
+        if (y < 0) y += 120;
+        p.setY(i * 2, y);
+        p.setY(i * 2 + 1, y + LARGO_GOTA);
       }
       p.needsUpdate = true;
     }
@@ -547,16 +732,6 @@ function construirEscena(contenedor, { oscuro, reducirMovimiento }) {
   };
 }
 
-// x del río a la altura z (para saber qué orilla es Piura y cuál Castilla).
-function cercaniaRioX(z) {
-  for (let i = 0; i < RIO_PIURA.length - 1; i++) {
-    const [ax, az] = RIO_PIURA[i];
-    const [bx, bz] = RIO_PIURA[i + 1];
-    if ((z >= az && z <= bz) || (z >= bz && z <= az)) return ax + ((bx - ax) * (z - az)) / (bz - az || 1);
-  }
-  return z < RIO_PIURA[0][1] ? RIO_PIURA[0][0] : RIO_PIURA[RIO_PIURA.length - 1][0];
-}
-
 function webglDisponible() {
   try {
     const c = document.createElement("canvas");
@@ -571,19 +746,36 @@ function webglDisponible() {
 function CiudadPiura3D({ niveles, lluvia = 0, caudal = 0 }) {
   const contenedorRef = useRef(null);
   const escenaRef = useRef(null);
+  const ultimoEstado = useRef({ niveles, lluvia, caudal });
   const { theme } = useTheme();
   const [error, setError] = useState(() => (webglDisponible() ? null : "sin-webgl"));
+  const [ciudad, setCiudad] = useState(null); // null = cargando; false = no se pudo
+  const [calidad, setCalidad] = useState(calidadSugerida);
 
   useEffect(() => {
-    if (error || !contenedorRef.current) return undefined;
+    if (error) return undefined;
+    let cancelado = false;
+    fetch(URL_CIUDAD)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+      .then((datos) => !cancelado && setCiudad(datos))
+      .catch(() => !cancelado && setCiudad(false));
+    return () => {
+      cancelado = true;
+    };
+  }, [error]);
+
+  useEffect(() => {
+    if (error || ciudad === null || !contenedorRef.current) return undefined;
     const reducir = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     try {
       escenaRef.current = construirEscena(contenedorRef.current, {
         oscuro: theme === "dark",
         reducirMovimiento: reducir,
+        ciudad: ciudad || null,
+        calidad,
       });
+      escenaRef.current.actualizar(ultimoEstado.current);
     } catch {
-      // WebGL presente pero falló al crear el contexto (GPU bloqueada, etc.).
       queueMicrotask(() => setError("fallo"));
       return undefined;
     }
@@ -591,11 +783,14 @@ function CiudadPiura3D({ niveles, lluvia = 0, caudal = 0 }) {
       escenaRef.current?.destruir();
       escenaRef.current = null;
     };
-  }, [theme, error]);
+  }, [theme, error, ciudad, calidad]);
 
+  // Guarda el último estado (para aplicarlo si la escena se reconstruye al
+  // cambiar tema o calidad) y lo pasa a la escena actual.
   useEffect(() => {
-    escenaRef.current?.actualizar({ niveles, lluvia, caudal });
-  }, [niveles, lluvia, caudal, theme]);
+    ultimoEstado.current = { niveles, lluvia, caudal };
+    escenaRef.current?.actualizar(ultimoEstado.current);
+  }, [niveles, lluvia, caudal]);
 
   if (error) {
     return (
@@ -613,9 +808,10 @@ function CiudadPiura3D({ niveles, lluvia = 0, caudal = 0 }) {
     <figure className="flex flex-col gap-2">
       <div
         ref={contenedorRef}
-        className="relative w-full h-[min(62vh,560px)] min-h-[340px] rounded-[24px] overflow-hidden touch-none"
+        className="relative w-full h-[min(64vh,600px)] min-h-[340px] rounded-[24px] overflow-hidden touch-none"
+        style={{ backgroundColor: "var(--color-surface-alt)" }}
         role="img"
-        aria-label="Vista 3D estilizada de Piura y Castilla con el río Piura. El agua sube según la simulación del escenario elegido."
+        aria-label="Vista 3D de Piura y Castilla con el río Piura, sus puentes, calles y edificios. El agua sube según la simulación del escenario elegido."
       >
         <span
           className="absolute top-3 left-3 z-10 text-[11px] font-extrabold tracking-wider px-2.5 py-1 rounded-full pointer-events-none"
@@ -623,10 +819,29 @@ function CiudadPiura3D({ niveles, lluvia = 0, caudal = 0 }) {
         >
           SIMULACIÓN · NO ES UN MAPA DE INUNDACIÓN
         </span>
+        <button
+          type="button"
+          onClick={() => setCalidad((c) => (c === "alta" ? "liviana" : "alta"))}
+          className="absolute bottom-3 left-3 z-10 min-h-[36px] px-3 rounded-full text-[11px] font-bold"
+          style={{ backgroundColor: "var(--color-glass-fuerte)", color: "var(--color-title)" }}
+          title="Cambia el nivel de detalle de la ciudad"
+        >
+          {calidad === "alta" ? "Detalle: alto" : "Detalle: liviano"}
+        </button>
+        {ciudad === null && (
+          <span
+            className="absolute inset-0 flex items-center justify-center text-sm font-semibold"
+            style={{ color: "var(--color-text-muted)" }}
+          >
+            Cargando la ciudad…
+          </span>
+        )}
       </div>
       <figcaption className="text-xs" style={{ color: "var(--color-text-muted)" }}>
-        Ciudad estilizada: el trazado del río y los puentes son reales (© colaboradores de OpenStreetMap); el
-        relieve y los edificios son inventados. Arrastra para girar y pellizca o usa la rueda para acercar.
+        {ciudad === false
+          ? "No se pudo cargar la ciudad; se muestra solo el río. "
+          : "Río, puentes, calles y contorno de los edificios reales (© colaboradores de OpenStreetMap, ODbL); la altura de los edificios y el relieve son estimados. "}
+        Arrastra para girar y pellizca o usa la rueda para acercar.
       </figcaption>
     </figure>
   );
