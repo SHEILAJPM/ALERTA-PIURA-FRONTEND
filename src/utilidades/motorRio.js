@@ -17,10 +17,12 @@ export const PASOS = DURACION_TOTAL / DT;
 
 export const CAUCE = {
   largoTramo: 3000, // m
-  ancho: 45, // m
+  // Del orden del río Piura en la ciudad (110–150 m entre orillas, como el
+  // largo de sus puentes): con estos valores se desborda cerca de 1 270 m3/s.
+  ancho: 110, // m
   pendiente: 0.0012,
   manning: 0.035,
-  ribera: 3.0, // m sobre el lecho
+  ribera: 4.5, // m sobre el lecho
 };
 const A_TRIBUTARIA_KM2 = [30, 25, 20];
 const C_ESCORRENTIA = 0.55;
@@ -28,8 +30,8 @@ const K_ESCORRENTIA = 1200; // s
 const X_MUSKINGUM = 0.2;
 
 // Umbrales del MODELO (no los del sensor real).
-export const UMBRAL_PREALERTA = 2.0;
-export const UMBRAL_ALERTA = 2.7;
+export const UMBRAL_PREALERTA = 2.5;
+export const UMBRAL_ALERTA = 3.8;
 
 export const ESCENARIOS = {
   normal: { nombre: "Normal", lluvia: 8, duracion: 120, caudal: 25, obstruccion: 0, transito: 240 },

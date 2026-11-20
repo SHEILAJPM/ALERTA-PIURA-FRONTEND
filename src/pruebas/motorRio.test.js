@@ -50,6 +50,13 @@ describe("simularRio", () => {
     expect(tapado.h[2][PASOS]).toBeGreaterThan(libre.h[2][PASOS]);
   });
 
+  it("una lluvia fuerte no desborda el cauce; una extrema sí", () => {
+    expect(Math.max(...simularRio({ ...ESCENARIOS.fuerte, acoplado: true }).volumen[2])).toBe(0);
+    expect(Math.max(...simularRio({ ...ESCENARIOS.extrema, acoplado: true }).h[2])).toBeGreaterThan(
+      CAUCE.ribera
+    );
+  });
+
   it("en una lluvia extrema el agua pasa a la planicie y luego vuelve al cauce", () => {
     const r = simularRio({ ...ESCENARIOS.extrema, acoplado: true });
     const maxVol = Math.max(...r.volumen[2]);
@@ -78,8 +85,8 @@ describe("aContrato", () => {
 
   it("registra un evento por cada cambio de estado del modelo", () => {
     expect(estadoModelo(1)).toBe("NORMAL");
-    expect(estadoModelo(2.2)).toBe("PREALERTA");
-    expect(estadoModelo(3)).toBe("ALERTA");
+    expect(estadoModelo(3)).toBe("PREALERTA");
+    expect(estadoModelo(4.2)).toBe("ALERTA");
     const params = { ...ESCENARIOS.extrema, acoplado: true };
     const contrato = aContrato(simularRio(params), params);
     expect(contrato.eventos.length).toBeGreaterThan(0);
