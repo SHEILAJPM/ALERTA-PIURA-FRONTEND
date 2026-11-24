@@ -13,8 +13,8 @@ export default defineConfig({
         name: "Piura Alerta",
         short_name: "Piura Alerta",
         description: "Monitoreo del río Piura y alertas de inundación en tiempo real",
-        theme_color: "#0a2f52",
-        background_color: "#0a2f52",
+        theme_color: "#faf7f0",
+        background_color: "#faf7f0",
         display: "standalone",
         start_url: "/",
         icons: [
@@ -45,6 +45,21 @@ export default defineConfig({
               cacheName: "piura-alerta-api",
               networkTimeoutSeconds: 4,
               expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // Albergues, zonas de riesgo e historial de alertas: lo que más
+            // se necesita durante un corte. Red primero; sin conexión, la
+            // última copia guardada (puede estar desactualizada, y así lo
+            // avisa AvisoSinConexion).
+            urlPattern: ({ url }) =>
+              /\/api\/(albergues|zonas-riesgo|alertas\/historial|alertas\/avisos-lluvia)$/.test(url.pathname),
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "piura-alerta-api-mapa",
+              networkTimeoutSeconds: 5,
+              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 7 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },

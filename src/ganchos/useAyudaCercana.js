@@ -9,12 +9,13 @@ import { useResource } from "./useResource";
 // en cada visita al mapa.
 const CENTRO = { lat: -5.1945, lon: -80.6328 };
 const RADIO_M = 7000;
-const CLAVE_CACHE = "piura-alerta-ayuda-cercana";
+// v2: desde que también se buscan los establecimientos con healthcare=*.
+const CLAVE_CACHE = "piura-alerta-ayuda-cercana-v2";
 const VIGENCIA_CACHE_MS = 24 * 60 * 60_000;
 
 const TIPOS = {
   hospital: { letra: "H", color: "#c1272d", etiqueta: "Hospital" },
-  clinic: { letra: "H", color: "#c1272d", etiqueta: "Posta / clínica" },
+  clinic: { letra: "H", color: "#c1272d", etiqueta: "Posta / centro de salud" },
   police: { letra: "P", color: "#0a2f52", etiqueta: "Comisaría" },
   fire_station: { letra: "B", color: "#e8580c", etiqueta: "Bomberos" },
 };
@@ -45,6 +46,7 @@ async function obtenerPuntosAyuda() {
   const consulta = `[out:json][timeout:25];
 (
   nwr["amenity"~"^(hospital|clinic)$"]${alrededor};
+  nwr["healthcare"~"^(hospital|centre|clinic)$"]${alrededor};
   nwr["amenity"="police"]${alrededor};
   nwr["amenity"="fire_station"]${alrededor};
 );
@@ -60,7 +62,11 @@ out center 300;`;
 
   const puntos = elements
     .map((el) => {
-      const tipo = TIPOS[el.tags?.amenity];
+      // En Perú muchas postas y centros de salud solo tienen healthcare=*.
+      const amenity = el.tags?.amenity;
+      const salud = el.tags?.healthcare;
+      const clave = TIPOS[amenity] ? amenity : salud === "hospital" ? "hospital" : salud ? "clinic" : null;
+      const tipo = TIPOS[clave];
       const lat = el.lat ?? el.center?.lat;
       const lon = el.lon ?? el.center?.lon;
       if (!tipo || typeof lat !== "number" || typeof lon !== "number") return null;
@@ -69,12 +75,20 @@ out center 300;`;
         lat,
         lon,
         nombre: el.tags.name ?? tipo.etiqueta,
+        salud: clave === "hospital" || clave === "clinic",
         etiqueta: tipo.etiqueta,
         letra: tipo.letra,
         color: tipo.color,
       };
     })
-    .filter(Boolean);
+    .filter(Boolean)
+    // Un mismo lugar puede venir como nodo y como edificio: se deja uno.
+    .filter(
+      (p, i, todos) =>
+        todos.findIndex(
+          (q) => q.nombre === p.nombre && Math.abs(q.lat - p.lat) < 0.0008 && Math.abs(q.lon - p.lon) < 0.0008
+        ) === i
+    );
 
   guardarCache(puntos);
   return puntos;

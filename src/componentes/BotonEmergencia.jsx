@@ -1,9 +1,59 @@
 import { useState } from "react";
+import { MessageSquareText } from "lucide-react";
 import { useModalA11y } from "../ganchos/useModalA11y";
 import { useAuth } from "../contexto/AuthContext";
 import { emergencyContacts } from "../datos/content";
 import { enviarSOS } from "../utilidades/api";
+import { leerPlan } from "../utilidades/planFamiliar";
+import { contactosParaSOS, enlaceSMS, mensajeSOS } from "../utilidades/sosSinInternet";
 import Icon from "./Icon";
+
+// Plan B del SOS: si no llegó al servidor, el teléfono puede mandar un SMS
+// (solo necesita señal de voz) a los contactos del plan familiar, con la
+// ubicación como enlace de mapa.
+function SOSporSMS({ ubicacion }) {
+  const contactos = contactosParaSOS(leerPlan());
+  const texto = mensajeSOS(ubicacion);
+
+  return (
+    <div
+      className="rounded-xl p-4 mt-3 flex flex-col gap-2"
+      style={{ backgroundColor: "var(--color-surface-alt)" }}
+    >
+      <p className="text-sm font-bold">Pide ayuda por SMS (funciona sin internet)</p>
+      {contactos.length > 0 ? (
+        <>
+          <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+            Se abre tu app de mensajes con {ubicacion ? "tu ubicación" : "el aviso"} ya escrito. Solo toca
+            enviar.
+          </p>
+          {contactos.map((c) => (
+            <a
+              key={c.telefono}
+              href={enlaceSMS(c.telefono, texto)}
+              className="flex items-center justify-between gap-2 rounded-lg px-4 py-3 text-sm font-bold text-white"
+              style={{ backgroundColor: "var(--color-alerta)" }}
+            >
+              <span className="flex items-center gap-2">
+                <MessageSquareText size={18} aria-hidden="true" />
+                SMS a {c.nombre}
+              </span>
+              <span className="font-mono-data">{c.telefono}</span>
+            </a>
+          ))}
+        </>
+      ) : (
+        <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
+          No tienes contactos guardados. Agrégalos en tu{" "}
+          <a href="/plan" className="font-bold underline" style={{ color: "var(--color-primary)" }}>
+            plan familiar
+          </a>{" "}
+          para poder avisarles por SMS. Ahora, llama a los números de abajo.
+        </p>
+      )}
+    </div>
+  );
+}
 
 // Geolocalización con permiso ya negado/no soportado: se resuelve igual (con
 // coords null) en vez de rechazar, para no complicar el flujo de un botón de
@@ -26,6 +76,7 @@ function BotonSOS() {
   const { usuario } = useAuth();
   const [estado, setEstado] = useState("inicial"); // inicial | confirmando | enviando | enviado | error
   const [error, setError] = useState(null);
+  const [ubicacionSOS, setUbicacionSOS] = useState(null);
   // Solo tiene sentido pedirlo sin cuenta: con sesión, el backend ya saca
   // nombre/teléfono del perfil (ver POST /api/sos). Opcional a propósito --
   // en una emergencia real no hay que trabar el envío por un campo vacío.
@@ -36,6 +87,7 @@ function BotonSOS() {
     setEstado("enviando");
     setError(null);
     const ubicacion = await obtenerUbicacion();
+    setUbicacionSOS(ubicacion);
     if (!ubicacion) {
       setError("No se pudo obtener tu ubicación. Activa el GPS/ubicación e intenta de nuevo.");
       setEstado("error");
@@ -50,7 +102,11 @@ function BotonSOS() {
       });
       setEstado("enviado");
     } catch (err) {
-      setError(err.message);
+      setError(
+        err.status === 0
+          ? "No hay internet y el SOS no llegó a Defensa Civil. Usa el SMS o llama ahora."
+          : `El SOS no llegó a Defensa Civil (${err.message}). Usa el SMS o llama ahora.`
+      );
       setEstado("error");
     }
   }
@@ -133,10 +189,11 @@ function BotonSOS() {
         </button>
       )}
       {error && (
-        <p className="text-sm mt-2" style={{ color: "var(--color-alerta)" }}>
+        <p className="text-sm mt-2" role="alert" style={{ color: "var(--color-alerta)" }}>
           {error}
         </p>
       )}
+      {estado === "error" && <SOSporSMS ubicacion={ubicacionSOS} />}
     </div>
   );
 }
@@ -146,8 +203,8 @@ function DialogoEmergencia({ onCerrar }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+      className="sr-velo fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-4"
+      style={{ backgroundColor: "rgba(10,22,36,0.45)", backdropFilter: "blur(6px)" }}
       onClick={onCerrar}
     >
       <div
@@ -156,8 +213,12 @@ function DialogoEmergencia({ onCerrar }) {
         aria-modal="true"
         aria-labelledby="emergencia-titulo"
         tabIndex={-1}
-        className="w-full max-w-sm rounded-2xl border p-6 outline-none"
-        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+        className="sr-hoja w-full max-w-sm rounded-[28px] border p-6 outline-none max-h-[90vh] overflow-y-auto"
+        style={{
+          backgroundColor: "var(--color-surface)",
+          borderColor: "var(--color-border)",
+          boxShadow: "0 24px 60px rgba(13,46,87,0.25)",
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-2">
@@ -204,20 +265,44 @@ function DialogoEmergencia({ onCerrar }) {
   );
 }
 
-function BotonEmergencia() {
+// variante="barra": botón circular al centro de la barra inferior (móvil).
+// variante="lateral": botón ancho en la barra lateral (escritorio).
+function BotonEmergencia({ variante = "barra" }) {
   const [abierto, setAbierto] = useState(false);
+
+  // Vibración corta al tocar (Android/WebView): confirma el toque sin mirar.
+  function abrir() {
+    try {
+      navigator.vibrate?.(35);
+    } catch {
+      // sin vibración disponible: no pasa nada
+    }
+    setAbierto(true);
+  }
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setAbierto(true)}
-        aria-label="Ver números de emergencia"
-        className="fixed bottom-5 right-5 z-40 w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl text-white animate-pulse-alert"
-        style={{ backgroundColor: "var(--color-alerta)" }}
-      >
-        <Icon name="bi-exclamation-triangle-fill" aria-hidden="true" />
-      </button>
+      {variante === "lateral" ? (
+        <button
+          type="button"
+          onClick={abrir}
+          aria-label="SOS: ver números de emergencia"
+          className="pa-sos pa-tocable w-full min-h-[52px] rounded-full flex items-center justify-center gap-2 font-extrabold tracking-wide"
+        >
+          <Icon name="bi-exclamation-triangle-fill" aria-hidden="true" className="text-lg" />
+          SOS · Emergencia
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={abrir}
+          aria-label="SOS: ver números de emergencia"
+          className="pa-sos w-16 h-16 -mt-8 rounded-full flex items-center justify-center text-[13px] font-extrabold tracking-[0.06em] border-4 active:scale-95 transition-transform"
+          style={{ borderColor: "var(--color-bg)" }}
+        >
+          SOS
+        </button>
+      )}
       {abierto && <DialogoEmergencia onCerrar={() => setAbierto(false)} />}
     </>
   );

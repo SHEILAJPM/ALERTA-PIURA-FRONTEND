@@ -16,6 +16,7 @@ import Home from "./paginas/Home";
 import MiPerfil from "./paginas/MiPerfil";
 import VerificarCorreo from "./paginas/VerificarCorreo";
 import Seguro from "./paginas/Seguro";
+import Mochila from "./paginas/Mochila";
 import MiPoliza from "./paginas/MiPoliza";
 // No lazy a propósito: su gancho escucha `beforeinstallprompt`, que el
 // navegador dispara una sola vez al cargar la página (ver useInstalarApp.js).
@@ -41,6 +42,17 @@ const Polizas = React.lazy(() => import("./paginas/admin/Polizas"));
 const ReclamosSeguro = React.lazy(() => import("./paginas/admin/ReclamosSeguro"));
 const AsistenteFeedback = React.lazy(() => import("./paginas/admin/AsistenteFeedback"));
 const Impacto = React.lazy(() => import("./paginas/admin/Impacto"));
+const IndicadoresODS = React.lazy(() => import("./paginas/admin/IndicadoresODS"));
+const DatosAbiertos = React.lazy(() => import("./paginas/DatosAbiertos"));
+const Laboratorio = React.lazy(() => import("./paginas/Laboratorio"));
+const Salud = React.lazy(() => import("./paginas/Salud"));
+const Ayuda = React.lazy(() => import("./paginas/Ayuda"));
+const Agricultura = React.lazy(() => import("./paginas/Agricultura"));
+const ImpactoPublico = React.lazy(() => import("./paginas/Impacto"));
+const PlanFamiliar = React.lazy(() => import("./paginas/PlanFamiliar"));
+const Quiz = React.lazy(() => import("./paginas/Quiz"));
+const Agua = React.lazy(() => import("./paginas/Agua"));
+const VigilanciaSalud = React.lazy(() => import("./paginas/admin/VigilanciaSalud"));
 const ChequeosSeguridad = React.lazy(() => import("./paginas/admin/ChequeosSeguridad"));
 const Configuracion = React.lazy(() => import("./paginas/admin/Configuracion"));
 const Simulacro = React.lazy(() => import("./paginas/admin/Simulacro"));
@@ -74,8 +86,18 @@ function App() {
                   <Route path="/historial" element={conSuspenso(<Historial />)} />
                   <Route path="/restablecer-password" element={<Navigate to="/" replace />} />
                   <Route path="/verificar-correo" element={<VerificarCorreo />} />
+                  <Route path="/mochila" element={<Mochila />} />
                   <Route path="/seguro" element={<Seguro />} />
                   <Route path="/app" element={<DescargarApp />} />
+                  <Route path="/datos-abiertos" element={conSuspenso(<DatosAbiertos />)} />
+                  <Route path="/laboratorio" element={conSuspenso(<Laboratorio />)} />
+                  <Route path="/salud" element={conSuspenso(<Salud />)} />
+                  <Route path="/ayuda" element={conSuspenso(<Ayuda />)} />
+                  <Route path="/agricultura" element={conSuspenso(<Agricultura />)} />
+                  <Route path="/impacto" element={conSuspenso(<ImpactoPublico />)} />
+                  <Route path="/plan" element={conSuspenso(<PlanFamiliar />)} />
+                  <Route path="/quiz" element={conSuspenso(<Quiz />)} />
+                  <Route path="/agua" element={conSuspenso(<Agua />)} />
                   <Route element={<ProtectedRoute />}>
                     <Route path="/perfil" element={<MiPerfil />} />
                     <Route path="/mi-poliza" element={<MiPoliza />} />
@@ -99,6 +121,8 @@ function App() {
                     <Route path="reclamos-seguro" element={conSuspenso(<ReclamosSeguro />)} />
                     <Route path="asistente" element={conSuspenso(<AsistenteFeedback />)} />
                     <Route path="impacto" element={conSuspenso(<Impacto />)} />
+                    <Route path="ods" element={conSuspenso(<IndicadoresODS />)} />
+                    <Route path="vigilancia-salud" element={conSuspenso(<VigilanciaSalud />)} />
                     <Route path="chequeos-seguridad" element={conSuspenso(<ChequeosSeguridad />)} />
                     <Route path="configuracion" element={conSuspenso(<Configuracion />)} />
                     <Route path="simulacro" element={conSuspenso(<Simulacro />)} />

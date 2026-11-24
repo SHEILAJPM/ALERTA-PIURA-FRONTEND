@@ -14,6 +14,18 @@ import { SENSOR_POR_DEFECTO } from "../../constantes/sensores";
 
 const LIMITE_MENSAJE = 1000;
 
+// Lo que la persona registró voluntariamente en su perfil (ver "Apoyo en una
+// evacuación" en MiPerfil.jsx). Si viene algo, su SOS se marca prioritario.
+const APOYO_TEXTO = {
+  adulto_mayor: "Adulto mayor",
+  movilidad_reducida: "Movilidad reducida",
+  discapacidad_visual: "Discapacidad visual",
+  discapacidad_auditiva: "Discapacidad auditiva",
+  gestante: "Gestante",
+  ninos_pequenos: "Niños pequeños",
+  enfermedad_cronica: "Enfermedad crónica",
+};
+
 function AlertasSOS() {
   const { data: alertas, loading, error, setData } = useAlertasSOS();
   const [atendiendo, setAtendiendo] = useState(null);
@@ -62,6 +74,25 @@ function AlertasSOS() {
                 {alerta.telefono_contacto && <>Tel: {alerta.telefono_contacto} · </>}
                 {formatearFechaHora(alerta.creado_en)}
               </p>
+              {alerta.apoyo_evacuacion?.length > 0 && (
+                <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                  <span
+                    className="text-xs font-extrabold uppercase tracking-wide px-2.5 py-1 rounded-full text-white"
+                    style={{ backgroundColor: "var(--color-alerta)" }}
+                  >
+                    Prioridad: necesita apoyo
+                  </span>
+                  {alerta.apoyo_evacuacion.map((tipo) => (
+                    <span
+                      key={tipo}
+                      className="text-xs font-bold px-2.5 py-1 rounded-full"
+                      style={{ backgroundColor: "var(--color-surface)", color: "var(--color-alerta)" }}
+                    >
+                      {APOYO_TEXTO[tipo] ?? tipo}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <a

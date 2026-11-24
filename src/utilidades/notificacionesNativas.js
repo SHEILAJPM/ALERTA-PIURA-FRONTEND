@@ -33,6 +33,8 @@ export function notificacionDeEvento(evento) {
   const sensor = evento.sensor_codigo ? ` (${evento.sensor_codigo})` : "";
   return {
     id: idNotificacion("evento", evento.id),
+    // Sirena solo si empeoró (prealerta o alerta roja), no al volver a normal.
+    alarma: evento.estado_nuevo !== "normal",
     title: titulo,
     body: `${MENSAJES_ESTADO[evento.estado_nuevo]}${detalle}${sensor}`,
   };
@@ -42,6 +44,7 @@ export function notificacionDeSimulacro(simulacro) {
   if (!simulacro?.activo) return null;
   return {
     id: idNotificacion("simulacro", simulacro.id),
+    alarma: true,
     title: "SIMULACRO · Piura Alerta",
     body: simulacro.mensaje || "Simulacro de evacuación en curso. Dirígete a tu zona segura.",
   };

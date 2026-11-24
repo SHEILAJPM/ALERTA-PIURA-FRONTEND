@@ -1,12 +1,32 @@
+import Icon from "./Icon";
+
+// Estado del río como chip: fondo pastel + punto de color + ícono, para que
+// no dependa solo del color.
 const ESTADOS = {
-  normal: { text: "Nivel normal", color: "var(--color-normal)", bg: "var(--color-normal-soft)" },
-  prealerta: { text: "Prealerta", color: "var(--color-prealerta)", bg: "var(--color-prealerta-soft)" },
-  alerta_roja: { text: "Alerta roja", color: "var(--color-alerta)", bg: "var(--color-alerta-soft)" },
+  normal: {
+    text: "Nivel normal",
+    icono: "bi-check-circle-fill",
+    color: "var(--color-normal)",
+    bg: "var(--color-normal-soft)",
+  },
+  prealerta: {
+    text: "Prealerta",
+    icono: "bi-exclamation-triangle-fill",
+    color: "var(--color-prealerta)",
+    bg: "var(--color-prealerta-soft)",
+  },
+  alerta_roja: {
+    text: "Alerta roja",
+    icono: "bi-exclamation-octagon-fill",
+    color: "var(--color-alerta)",
+    bg: "var(--color-alerta-soft)",
+  },
 };
 
 function StatusBadge({ status }) {
   const actual = ESTADOS[status] ?? {
     text: "Sin datos",
+    icono: null,
     color: "var(--color-text-muted)",
     bg: "var(--color-surface-alt)",
   };
@@ -14,16 +34,11 @@ function StatusBadge({ status }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm ${
-        esAlertaRoja ? "animate-pulse-alert" : ""
-      }`}
+      className={`chip-estado ${esAlertaRoja ? "animate-pulse-alert" : ""}`}
       style={{ color: actual.color, backgroundColor: actual.bg }}
     >
-      <span
-        aria-hidden="true"
-        className="w-2.5 h-2.5 rounded-full"
-        style={{ backgroundColor: actual.color }}
-      />
+      <span aria-hidden="true" className="punto" />
+      {actual.icono && <Icon name={actual.icono} aria-hidden="true" className="text-[14px]" />}
       {actual.text}
     </span>
   );

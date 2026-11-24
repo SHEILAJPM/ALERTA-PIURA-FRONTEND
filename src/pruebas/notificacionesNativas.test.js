@@ -15,6 +15,11 @@ describe("notificaciones de la app Android", () => {
     expect(n.title).toBe("ALERTA ROJA · río Piura");
     expect(n.body).toContain("Nivel actual: 16.5 cm.");
     expect(n.body).toContain("RIO-PIURA-01");
+    expect(n.alarma).toBe(true);
+  });
+
+  it("no hace sonar la sirena cuando el río vuelve a la normalidad", () => {
+    expect(notificacionDeEvento({ estado_nuevo: "normal", nivel_cm: 2 }).alarma).toBe(false);
   });
 
   it("ignora estados desconocidos", () => {
@@ -27,6 +32,7 @@ describe("notificaciones de la app Android", () => {
     const n = notificacionDeSimulacro({ activo: true, id: "mhq2x", mensaje: "Evacúa al patio" });
     expect(n.title).toContain("SIMULACRO");
     expect(n.body).toBe("Evacúa al patio");
+    expect(n.alarma).toBe(true);
   });
 
   it("da el mismo id al mismo evento y uno válido para Android", () => {

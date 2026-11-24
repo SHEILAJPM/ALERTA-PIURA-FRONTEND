@@ -1,58 +1,125 @@
-@import url("https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* =========================================================================
+   Piura Alerta — sistema visual "Escudo"
+   Colores del escudo de Piura sobre un fondo cálido y luminoso. El claro es
+   SIEMPRE el tema inicial (ver ThemeContext.jsx); el oscuro solo se activa a
+   mano desde Ajustes y cuelga de la clase .dark en <html>.
+   Los nombres de variable --color-* se mantienen: los usan todos los
+   componentes, así que cambiar aquí los valores repinta la app entera.
+   ========================================================================= */
 :root {
-  --color-bg: #f4f6f8;
+  --color-bg: #faf7f0;
   --color-surface: #ffffff;
-  --color-surface-alt: #eef2f5;
-  --color-border: #e2e8ee;
-  --color-text: #16232c;
-  --color-text-muted: #5b6b76;
+  --color-surface-alt: #f3f0e8;
+  --color-border: rgba(13, 46, 87, 0.1);
+  --color-text: #1c2430;
+  --color-text-muted: #5b6573;
+  --color-title: #0d2e57;
 
-  /* Azul del escudo de Piura: color de marca/institucional. */
-  --color-primary: #0a2f52;
-  --color-primary-hover: #082541;
-  --color-primary-soft: #e2ebf3;
+  /* Azul cerúleo del escudo: principal, enlaces y elementos activos. */
+  --color-primary: #1565c0;
+  --color-primary-hover: #0f4c99;
+  --color-primary-soft: #e6f0fb;
 
-  /* Azul institucional fijo para el header/footer: no se invierte en modo oscuro. */
-  --color-brand-chrome: #0a2f52;
+  /* Azul noche: títulos y el único bloque oscuro (hero). No se invierte. */
+  --color-brand-chrome: #0d2e57;
+  --color-noche: #0d2e57;
+  /* Fondo de lo seleccionado (pestaña, chip, tarjeta elegida). */
+  --color-activo: #0d2e57;
+  --color-hero-desde: #1565c0;
+  --color-hero-hasta: #0d2e57;
 
-  /* Dorado del escudo (corona, castillo): acento, nunca color de alerta. */
-  --color-dorado: #b8862e;
-  --color-dorado-soft: #faf1dc;
+  /* Dorado castillo. --color-dorado es la versión legible como texto sobre
+     claro; --color-sol es el dorado puro para fondos de botones, siempre con
+     texto azul noche encima. */
+  --color-dorado: #8a6400;
+  --color-dorado-soft: #fff4cc;
+  --color-sol: #f2b705;
+  --color-sol-claro: #ffd95a;
+  --color-sol-soft: #fff1c2;
+  --color-sol-texto: #0d2e57;
 
-  --color-normal: #2f9e44;
-  --color-normal-soft: #e6f6ea;
-  --color-prealerta: #e8a33d;
-  --color-prealerta-soft: #fdf1de;
-  /* Rojo escarlata del escudo: reservado para alerta real, no para marca. */
-  --color-alerta: #c1272d;
-  --color-alerta-soft: #fbe4e5;
+  /* Estados. Rojo SOLO para crítica y SOS. */
+  --color-normal: #2e7d32;
+  --color-normal-soft: #e7f4e8;
+  --color-prealerta: #a85700;
+  --color-prealerta-punto: #e8900c;
+  --color-prealerta-soft: #fff3dc;
+  --color-alerta: #c62828;
+  --color-alerta-soft: #fdecec;
+  --color-info: #1565c0;
+  --color-info-soft: #e6f0fb;
+
+  /* Laboratorio de simulación (DEMO): color propio, que no se usa en ningún
+     dato real, para que lo simulado nunca se confunda con el río real. */
+  --color-demo: #6b4fbb;
+  --color-demo-soft: #efeafb;
+
+  /* Vidrio claro y manchas de luz del fondo. */
+  --color-glass: rgba(255, 255, 255, 0.7);
+  --color-glass-fuerte: rgba(255, 255, 255, 0.86);
+  --color-glass-border: rgba(255, 255, 255, 0.9);
+  --shadow-glass: 0 8px 32px rgba(13, 46, 87, 0.08);
+  --shadow-glass-hover: 0 14px 40px rgba(13, 46, 87, 0.13);
+  --color-blob-cielo: #dcebfa;
+  --color-blob-dorado: #fff1c2;
+  --color-skeleton: #eceef2;
+  --color-skeleton-brillo: #f8f9fb;
+
+  --radius-card: 24px;
+  --radius-hero: 28px;
+  --ease-suave: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur: 260ms;
+  --ancho-sidebar: 272px;
+  --alto-tabbar: 68px;
 }
 
 .dark {
-  --color-bg: #0a1420;
-  --color-surface: #132436;
-  --color-surface-alt: #0f1d2c;
-  --color-border: #1e3346;
-  --color-text: #e8eef3;
-  --color-text-muted: #93a5b3;
+  --color-bg: #0a1624;
+  --color-surface: #12233a;
+  --color-surface-alt: #0f1e32;
+  --color-border: rgba(255, 255, 255, 0.09);
+  --color-text: #e9eef4;
+  --color-text-muted: #a3afbd;
+  --color-title: #f3f6fa;
 
-  --color-primary: #4a7ba6;
-  --color-primary-hover: #5c8cb8;
-  --color-primary-soft: #16324a;
+  --color-primary: #2f7be0;
+  --color-primary-hover: #4a8ff0;
+  --color-primary-soft: #16304f;
+  --color-activo: #2f7be0;
 
-  --color-dorado: #e0b84a;
-  --color-dorado-soft: #3a2f12;
+  --color-hero-desde: #1a5bb0;
+  --color-hero-hasta: #0b2347;
 
-  --color-normal: #4ecb6b;
-  --color-normal-soft: #123322;
-  --color-prealerta: #f2b854;
-  --color-prealerta-soft: #3a2a10;
-  --color-alerta: #ef4b52;
-  --color-alerta-soft: #3a1416;
+  --color-dorado: #f2c94c;
+  --color-dorado-soft: #3a2f0e;
+  --color-sol-soft: #3a2f0e;
+
+  --color-normal: #5fd08a;
+  --color-normal-soft: rgba(95, 208, 138, 0.14);
+  --color-prealerta: #ffb547;
+  --color-prealerta-punto: #ffb547;
+  --color-prealerta-soft: rgba(255, 181, 71, 0.14);
+  --color-alerta: #ff6b6b;
+  --color-alerta-soft: rgba(255, 107, 107, 0.14);
+  --color-info: #6fa8ff;
+  --color-info-soft: rgba(111, 168, 255, 0.14);
+  --color-demo: #b8a4ff;
+  --color-demo-soft: rgba(184, 164, 255, 0.14);
+
+  --color-glass: rgba(20, 36, 58, 0.66);
+  --color-glass-fuerte: rgba(20, 36, 58, 0.88);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+  --shadow-glass: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --shadow-glass-hover: 0 14px 40px rgba(0, 0, 0, 0.45);
+  --color-blob-cielo: #123a66;
+  --color-blob-dorado: #3a2f0e;
+  --color-skeleton: #182b44;
+  --color-skeleton-brillo: #213855;
 }
 
 @layer base {
@@ -65,7 +132,8 @@
 
 html {
   font-family:
-    "Public Sans",
+    "Plus Jakarta Sans",
+    "Inter Tight",
     system-ui,
     -apple-system,
     BlinkMacSystemFont,
@@ -73,6 +141,8 @@ html {
     sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -81,16 +151,30 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
   transition:
-    background-color 0.2s ease,
-    color 0.2s ease;
+    background-color var(--dur) var(--ease-suave),
+    color var(--dur) var(--ease-suave);
 }
 
 button {
   font-family: inherit;
 }
 
+h1,
+h2,
+.font-display {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--color-title);
+  text-wrap: balance;
+}
+
+/* Cifras de datos: misma familia, con números tabulares para que no bailen
+   al actualizarse en vivo. */
 .font-mono-data {
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 @keyframes pulse-alert {
@@ -106,20 +190,335 @@ button {
 .animate-pulse-alert {
   animation: pulse-alert 1.8s ease-out infinite;
 }
-button:focus-visible,
-a:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
+
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
 }
 
 html {
   scroll-behavior: smooth;
 }
 
-@media (max-width: 768px) {
-  .container {
-    padding-left: 16px;
-    padding-right: 16px;
+/* =========================================================================
+   Fondo vivo: 3 manchas de luz muy difuminadas que se mueven lento.
+   ========================================================================= */
+.pa-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--color-bg);
+  transition: background-color var(--dur) var(--ease-suave);
+}
+.pa-mancha {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.9;
+  will-change: transform;
+}
+.pa-mancha-1 {
+  width: 520px;
+  height: 520px;
+  top: -160px;
+  right: -140px;
+  background: var(--color-blob-cielo);
+  animation: pa-deriva-1 26s ease-in-out infinite alternate;
+}
+.pa-mancha-2 {
+  width: 440px;
+  height: 440px;
+  top: 38%;
+  left: -180px;
+  background: var(--color-blob-dorado);
+  animation: pa-deriva-2 32s ease-in-out infinite alternate;
+}
+.pa-mancha-3 {
+  width: 420px;
+  height: 420px;
+  bottom: -160px;
+  right: 12%;
+  background: var(--color-blob-cielo);
+  opacity: 0.7;
+  animation: pa-deriva-1 38s ease-in-out infinite alternate-reverse;
+}
+@keyframes pa-deriva-1 {
+  to {
+    transform: translate(-70px, 80px) scale(1.12);
+  }
+}
+@keyframes pa-deriva-2 {
+  to {
+    transform: translate(90px, -60px) scale(0.9);
+  }
+}
+
+/* =========================================================================
+   Vidrio claro
+   ========================================================================= */
+.vidrio {
+  background-color: var(--color-glass);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid var(--color-glass-border);
+  box-shadow: var(--shadow-glass);
+}
+.vidrio-fuerte {
+  background-color: var(--color-glass-fuerte);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  backdrop-filter: blur(24px) saturate(1.5);
+  border: 1px solid var(--color-glass-border);
+  box-shadow: var(--shadow-glass);
+}
+
+/* Toda tarjeta de superficie dentro del contenido pasa a vidrio, sin tocar
+   uno por uno los ~50 componentes que la pintan con --color-surface. Los
+   diálogos quedan fuera: sobre el velo oscuro necesitan fondo opaco.
+   Tampoco se aplica a una tarjeta que tenga adentro algo `fixed` (un modal
+   abierto): backdrop-filter crea un bloque contenedor y el modal quedaría
+   encerrado dentro de la tarjeta en vez de cubrir la pantalla. */
+main
+  :is(section, article, div, li, form, fieldset, aside)[style*="background-color: var(--color-surface)"]:not(
+    [role="dialog"]
+  ):not([role="dialog"] *):not(:has(.fixed)) {
+  background-color: var(--color-glass) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  border-color: var(--color-glass-border) !important;
+  box-shadow: var(--shadow-glass);
+  transition:
+    box-shadow var(--dur) var(--ease-suave),
+    transform var(--dur) var(--ease-suave),
+    background-color var(--dur) var(--ease-suave);
+}
+main :is(section, article, div, form, fieldset, aside).rounded-3xl {
+  border-radius: var(--radius-card);
+}
+
+/* Línea dorada fina inspirada en la orla del escudo: firma visual. */
+.orla {
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-sol) 18%,
+    var(--color-sol-claro) 50%,
+    var(--color-sol) 82%,
+    transparent
+  );
+}
+
+/* Tarjeta hero: el único bloque oscuro, con degradado del escudo. */
+.pa-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  color: #ffffff;
+  border-radius: var(--radius-hero);
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(255, 255, 255, 0.16), transparent 55%),
+    linear-gradient(145deg, var(--color-hero-desde), var(--color-hero-hasta));
+  box-shadow: 0 18px 44px rgba(13, 46, 87, 0.28);
+}
+.pa-hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-sol) 22%,
+    var(--color-sol-claro) 50%,
+    var(--color-sol) 78%,
+    transparent
+  );
+}
+.pa-hero h1,
+.pa-hero h2,
+.pa-hero h3 {
+  color: #ffffff;
+}
+
+/* Botón principal dorado: texto azul noche para que se lea bien. */
+.btn-dorado {
+  background: linear-gradient(135deg, var(--color-sol), var(--color-sol-claro));
+  color: var(--color-sol-texto);
+  box-shadow: 0 8px 20px rgba(242, 183, 5, 0.32);
+}
+.btn-dorado:hover {
+  box-shadow: 0 10px 26px rgba(242, 183, 5, 0.42);
+}
+
+/* Chips de estado: fondo pastel + punto de color + ícono. */
+.chip-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 9px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.chip-estado .punto {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Interacción: tarjetas que se escalan un poco al tocarlas. */
+.pa-tocable {
+  transition:
+    transform var(--dur) var(--ease-suave),
+    box-shadow var(--dur) var(--ease-suave),
+    background-color var(--dur) var(--ease-suave);
+}
+.pa-tocable:hover {
+  box-shadow: var(--shadow-glass-hover);
+}
+.pa-tocable:active {
+  transform: scale(0.98);
+}
+
+/* Entrada escalonada: fade + slide. El retraso sale de --i. */
+@keyframes pa-entra {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.pa-entra {
+  animation: pa-entra 480ms var(--ease-suave) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+/* Skeleton con brillo. */
+.pa-skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-skeleton);
+}
+.pa-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, var(--color-skeleton-brillo), transparent);
+  animation: pa-brillo 1.4s ease-in-out infinite;
+}
+@keyframes pa-brillo {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Punto "en vivo". */
+@keyframes pa-vivo {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 9px color-mix(in srgb, currentColor 0%, transparent);
+  }
+}
+.pa-vivo {
+  animation: pa-vivo 2.4s ease-out infinite;
+}
+
+/* Botón SOS: pulso lento con sombra roja suave. */
+@keyframes pa-sos {
+  0%,
+  100% {
+    box-shadow:
+      0 10px 26px rgba(198, 40, 40, 0.38),
+      0 0 0 0 rgba(198, 40, 40, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 10px 26px rgba(198, 40, 40, 0.38),
+      0 0 0 14px rgba(198, 40, 40, 0);
+  }
+}
+.pa-sos {
+  background: radial-gradient(circle at 35% 30%, #e35656, #c62828 62%);
+  color: #ffffff;
+  animation: pa-sos 2.8s ease-in-out infinite;
+}
+
+/* Fila de chips deslizable sin barra visible. */
+.pa-deslizable {
+  overflow-x: auto;
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
+.pa-deslizable::-webkit-scrollbar {
+  display: none;
+}
+
+/* Espacio para la barra inferior flotante en móvil. */
+.pa-contenido {
+  padding-bottom: calc(var(--alto-tabbar) + 40px + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 1024px) {
+  .pa-contenido {
+    padding-bottom: 0;
+    padding-left: var(--ancho-sidebar);
+  }
+}
+
+/* Interruptor estilo iOS. */
+.pa-switch {
+  position: relative;
+  width: 51px;
+  height: 31px;
+  border-radius: 999px;
+  background: var(--color-skeleton);
+  transition: background-color var(--dur) var(--ease-suave);
+  flex: none;
+}
+.pa-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform var(--dur) var(--ease-suave);
+}
+.pa-switch[aria-checked="true"] {
+  background: var(--color-primary);
+}
+.pa-switch[aria-checked="true"]::after {
+  transform: translateX(20px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pa-mancha,
+  .pa-entra,
+  .pa-skeleton::after,
+  .pa-vivo,
+  .pa-sos {
+    animation: none;
+  }
+  .pa-tocable,
+  .pa-switch,
+  .pa-switch::after {
+    transition: none;
   }
 }
 
@@ -148,6 +547,17 @@ html {
   to {
     width: 100%;
   }
+}
+
+/* Leaflet pone a sus capas z-index de 400 a 1000 (mosaicos, marcadores,
+   controles de zoom). Sin un contexto de apilamiento propio, esas capas
+   compiten con el resto de la página y el mapa se monta encima del header
+   fijo (z-20) al hacer scroll. isolation: isolate las encierra dentro del
+   mapa, así que adentro siguen ordenadas pero afuera el mapa cuenta como un
+   elemento normal. */
+.leaflet-container {
+  isolation: isolate;
+  z-index: 0;
 }
 
 /* Ver RiesgoMap.jsx: solo se aplica sin clave de CARTO en tema oscuro, para
@@ -193,4 +603,467 @@ html {
   .simulacro-latido {
     animation: none;
   }
+}
+
+/* --- Animaciones del rediseño "Sol y Río" ----------------------------------
+   Todas se apagan con "reducir movimiento" (al final del bloque). */
+@keyframes sr-entra {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sr-ola {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-120px);
+  }
+}
+
+@keyframes sr-latido {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 10px color-mix(in srgb, currentColor 0%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 0%, transparent);
+  }
+}
+
+@keyframes sr-hoja {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes sr-velo {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sr-barra {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes sr-pop {
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.sr-entra {
+  animation: sr-entra 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.sr-ola {
+  animation: sr-ola 3.5s linear infinite;
+}
+
+.sr-latido {
+  animation: sr-latido 1.6s infinite;
+}
+
+.sr-hoja {
+  animation: sr-hoja 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.sr-velo {
+  animation: sr-velo 0.4s ease both;
+}
+
+.sr-barra {
+  transform-origin: left;
+  animation: sr-barra 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.sr-pop {
+  animation: sr-pop 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.sr-anillo {
+  transition:
+    stroke-dashoffset 1.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+    stroke 0.4s ease;
+}
+
+.sr-presionable {
+  transition:
+    transform 0.12s ease,
+    background-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+.sr-presionable:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr-entra,
+  .sr-ola,
+  .sr-latido,
+  .sr-hoja,
+  .sr-velo,
+  .sr-barra,
+  .sr-pop {
+    animation: none;
+  }
+
+  .sr-anillo,
+  .sr-presionable {
+    transition: none;
+  }
+}
+
+/* --- Mapa: estilo claro y desaturado, marcadores que pulsan ------------- */
+/* Solo la capa base (la primera): capas encima como el radar de lluvia son
+   datos y conservan su color. */
+:root:not(.dark) .leaflet-tile-pane > .leaflet-layer:first-child {
+  filter: saturate(0.35) brightness(1.05) contrast(0.94);
+}
+.leaflet-container {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  background: var(--color-surface-alt);
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 20px;
+  box-shadow: var(--shadow-glass-hover);
+}
+.leaflet-bar {
+  border: 0 !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+  box-shadow: var(--shadow-glass) !important;
+}
+.pa-marcador {
+  position: relative;
+}
+.pa-marcador::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  border: 2px solid var(--c);
+  animation: pa-marcador-pulso 2.4s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes pa-marcador-pulso {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pa-marcador::before {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* =========================================================================
+   Animaciones (todas se apagan con "reducir movimiento", al final).
+   ========================================================================= */
+
+/* Entrada de cada pantalla al navegar. Fill "backwards": al terminar no deja
+   ningún transform puesto, así los modales `fixed` de la página no quedan
+   atrapados en un bloque contenedor. */
+@keyframes pa-pagina {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.995);
+  }
+}
+.pa-pagina {
+  animation: pa-pagina 420ms var(--ease-suave) backwards;
+}
+
+/* Secciones que aparecen al hacer scroll (ver useRevelar). */
+.pa-revelar {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 700ms var(--ease-suave),
+    transform 700ms var(--ease-suave);
+}
+.pa-revelar[data-visible] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Destello cuando llega un dato nuevo. */
+@keyframes pa-destello {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  30% {
+    transform: scale(1.06);
+    filter: brightness(1.25);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+.pa-destello {
+  animation: pa-destello 700ms var(--ease-suave);
+}
+
+/* Brillo que sigue al puntero (ver useFoco). */
+.pa-foco {
+  position: relative;
+  overflow: hidden;
+}
+.pa-foco::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms var(--ease-suave);
+  background: radial-gradient(
+    320px circle at var(--mx, 50%) var(--my, 50%),
+    color-mix(in srgb, var(--color-primary) 10%, transparent),
+    transparent 60%
+  );
+}
+@media (hover: hover) {
+  .pa-foco:hover::after {
+    opacity: 1;
+  }
+  .pa-foco.pa-tocable:hover {
+    transform: translateY(-3px);
+  }
+}
+
+/* Agua que sube dentro de la tarjeta hero según el nivel del río. */
+.pa-agua {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  transition: height 1400ms var(--ease-suave);
+}
+.pa-agua svg {
+  position: absolute;
+  left: 0;
+  top: -15px;
+  width: 200%;
+  height: 16px;
+}
+.pa-agua-ola-1 {
+  animation: pa-ola 7s linear infinite;
+}
+.pa-agua-ola-2 {
+  animation: pa-ola 11s linear infinite reverse;
+}
+@keyframes pa-ola {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Barra inferior: indicador que se desliza a la pestaña activa y salto
+   del ícono al elegirla. */
+.pa-indicador {
+  transition:
+    transform 420ms var(--ease-suave),
+    opacity 200ms ease;
+}
+@keyframes pa-salto {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-5px) scale(1.12);
+  }
+  100% {
+    transform: none;
+  }
+}
+.pa-salto {
+  animation: pa-salto 480ms var(--ease-suave);
+}
+
+/* Pasos del formulario: entran desde el lado hacia el que se avanza. */
+@keyframes pa-desde-derecha {
+  from {
+    opacity: 0;
+    transform: translateX(28px);
+  }
+}
+@keyframes pa-desde-izquierda {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+  }
+}
+.pa-paso-adelante {
+  animation: pa-desde-derecha 360ms var(--ease-suave) backwards;
+}
+.pa-paso-atras {
+  animation: pa-desde-izquierda 360ms var(--ease-suave) backwards;
+}
+
+/* Check que se dibuja. */
+.pa-check circle {
+  stroke-dasharray: 151;
+  stroke-dashoffset: 151;
+  animation: pa-trazo 600ms var(--ease-suave) forwards;
+}
+.pa-check path {
+  stroke-dasharray: 36;
+  stroke-dashoffset: 36;
+  animation: pa-trazo 380ms var(--ease-suave) 450ms forwards;
+}
+@keyframes pa-trazo {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Ilustración del estado vacío: sol que gira lento y ola que avanza. */
+.pa-girar {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pa-girar 24s linear infinite;
+}
+@keyframes pa-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.pa-flotar {
+  animation: pa-flotar 4s ease-in-out infinite alternate;
+}
+@keyframes pa-flotar {
+  to {
+    transform: translateY(-4px);
+  }
+}
+
+/* Barra superior: se compacta al hacer scroll. */
+.pa-barra-superior {
+  transition:
+    box-shadow var(--dur) var(--ease-suave),
+    background-color var(--dur) var(--ease-suave),
+    margin var(--dur) var(--ease-suave);
+}
+.pa-barra-superior > div {
+  transition: height var(--dur) var(--ease-suave);
+}
+.pa-barra-superior[data-compacta] {
+  background-color: var(--color-glass-fuerte);
+  box-shadow: var(--shadow-glass-hover);
+}
+.pa-barra-superior[data-compacta] > div {
+  height: 3.5rem;
+}
+
+/* Cambio de tema: el nuevo tema se revela en círculo desde el interruptor
+   (View Transitions API; sin soporte, cambia de golpe). */
+html.pa-cambio-tema::view-transition-old(root),
+html.pa-cambio-tema::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+html.pa-cambio-tema::view-transition-new(root) {
+  animation: pa-revelar-tema 650ms var(--ease-suave);
+}
+@keyframes pa-revelar-tema {
+  from {
+    clip-path: circle(0 at var(--vt-x, 50%) var(--vt-y, 50%));
+  }
+  to {
+    clip-path: circle(var(--vt-r, 150%) at var(--vt-x, 50%) var(--vt-y, 50%));
+  }
+}
+
+/* Hoja inferior arrastrable: mientras se arrastra no hay transición. */
+.pa-hoja-arrastrable {
+  transition: transform 320ms var(--ease-suave);
+}
+.pa-hoja-arrastrable[data-arrastrando] {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pa-pagina,
+  .pa-destello,
+  .pa-agua-ola-1,
+  .pa-agua-ola-2,
+  .pa-salto,
+  .pa-paso-adelante,
+  .pa-paso-atras,
+  .pa-girar,
+  .pa-flotar {
+    animation: none;
+  }
+  .pa-revelar {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .pa-check circle,
+  .pa-check path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .pa-indicador,
+  .pa-agua,
+  .pa-barra-superior,
+  .pa-barra-superior > div,
+  .pa-hoja-arrastrable {
+    transition: none;
+  }
+  .pa-foco.pa-tocable:hover {
+    transform: none;
+  }
+}
+
+/* Franja de "SIMULACIÓN" del Laboratorio: rayas diagonales para que se
+   reconozca como demostración aun sin leer el texto. */
+.pa-franja-demo {
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--color-demo) 14%, transparent) 0 10px,
+      transparent 10px 20px
+    ),
+    var(--color-demo-soft);
+  border: 1.5px dashed var(--color-demo);
 }

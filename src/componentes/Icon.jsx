@@ -1,3 +1,43 @@
+import {
+  Activity,
+  AudioLines,
+  Bell,
+  BellRing,
+  Bot,
+  Calculator,
+  Camera,
+  Check,
+  CircleCheck,
+  ClipboardCheck,
+  Download,
+  Heart,
+  History,
+  House,
+  IdCard,
+  Map as MapIcon,
+  MapPin,
+  Megaphone,
+  Mic,
+  Moon,
+  NotebookText,
+  OctagonAlert,
+  Plus,
+  QrCode,
+  Radio,
+  RadioTower,
+  Send,
+  Signal,
+  SlidersHorizontal,
+  Sun,
+  TrendingUp,
+  TriangleAlert,
+  Waves,
+  Wrench,
+  X,
+} from "lucide-react";
+
+// Los SVG de abajo (bootstrap-icons, MIT) quedan solo para iconoHTML: los
+// marcadores de Leaflet se arman como HTML en texto, fuera de React.
 // SVG extraído de node_modules/bootstrap-icons/icons/*.svg (paquete ya
 // instalado, MIT license) al momento de escribir este archivo — evita cargar
 // la fuente de íconos completa (~314 KB) para los 31 glifos que realmente
@@ -63,21 +103,62 @@ const RUTAS = {
   <path d="M7 12h1v3h4v1H7zm9 2v2h-3v-1h2v-1z"/>`,
 };
 
-// dangerouslySetInnerHTML es seguro acá: el contenido sale de este mismo
-// archivo (extraído en build-time de un paquete local), nunca de props ni de
-// datos de usuario/servidor.
-function Icon({ name, className = "", style, ...props }) {
-  const contenido = RUTAS[name];
-  if (!contenido) return null;
+// Ícono de línea fina (Lucide) para la interfaz. Los nombres bi-* se
+// conservan para no tocar cada componente: acá se traducen al equivalente
+// de Lucide. Las variantes *-fill que marcan un estado activo (corazón,
+// campana, micrófono) usan un ícono distinto o relleno para que se note.
+const LUCIDE = {
+  "bi-send": [Send],
+  "bi-calculator": [Calculator],
+  "bi-check-circle-fill": [CircleCheck],
+  "bi-exclamation-triangle-fill": [TriangleAlert],
+  "bi-exclamation-octagon-fill": [OctagonAlert],
+  "bi-person-badge": [IdCard],
+  "bi-broadcast-pin": [RadioTower],
+  "bi-journal-text": [NotebookText],
+  "bi-reception-4": [Signal],
+  "bi-sliders": [SlidersHorizontal],
+  "bi-tools": [Wrench],
+  "bi-broadcast": [Radio],
+  "bi-house-door": [House],
+  "bi-house-door-fill": [House],
+  "bi-clipboard-check": [ClipboardCheck],
+  "bi-water": [Waves],
+  "bi-map": [MapIcon],
+  "bi-megaphone": [Megaphone],
+  "bi-graph-up-arrow": [TrendingUp],
+  "bi-geo-alt-fill": [MapPin],
+  "bi-geo-alt": [MapPin],
+  "bi-clock-history": [History],
+  "bi-heart-fill": [Heart, true],
+  "bi-heart": [Heart],
+  "bi-camera": [Camera],
+  "bi-sun-fill": [Sun],
+  "bi-moon-stars-fill": [Moon],
+  "bi-plus-lg": [Plus],
+  "bi-robot": [Bot],
+  "bi-check-lg": [Check],
+  "bi-x-lg": [X],
+  "bi-download": [Download],
+  "bi-bell": [Bell],
+  "bi-bell-fill": [BellRing],
+  "bi-mic": [Mic],
+  "bi-mic-fill": [AudioLines],
+  "bi-activity": [Activity],
+  "bi-qr-code": [QrCode],
+};
+
+function Icon({ name, className = "", style, strokeWidth = 1.75, ...props }) {
+  const entrada = LUCIDE[name];
+  if (!entrada) return null;
+  const [Componente, relleno] = entrada;
   return (
-    <svg
-      viewBox="0 0 16 16"
-      width="1em"
-      height="1em"
-      fill="currentColor"
+    <Componente
+      size="1em"
+      strokeWidth={strokeWidth}
+      fill={relleno ? "currentColor" : "none"}
       className={`inline-block shrink-0 ${className}`}
-      style={{ verticalAlign: "-0.125em", ...style }}
-      dangerouslySetInnerHTML={{ __html: contenido }}
+      style={{ verticalAlign: "-0.14em", ...style }}
       {...props}
     />
   );

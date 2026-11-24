@@ -1,10 +1,7 @@
+// Bloque de carga con brillo (shimmer) en gris muy claro; se apaga con
+// "reducir movimiento" (ver .pa-skeleton en index.css).
 function Skeleton({ className = "", style }) {
-  return (
-    <div
-      className={`animate-pulse rounded-md ${className}`}
-      style={{ backgroundColor: "var(--color-surface-alt)", ...style }}
-    />
-  );
+  return <div aria-hidden="true" className={`pa-skeleton rounded-xl ${className}`} style={style} />;
 }
 
 export default Skeleton;

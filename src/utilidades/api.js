@@ -87,6 +87,13 @@ export function getHistorico(sensorCodigo = SENSOR_POR_DEFECTO, minutos = 180) {
   return apiFetch(`/api/lecturas${query({ sensor: sensorCodigo, minutos })}`);
 }
 
+// Puntaje de riesgo de 0 a 100 explicado factor por factor (backend
+// servicios/puntajeRiesgo.js). Con ubicación suma la zona de riesgo y el
+// albergue más cercano; sin ella, solo el río y la lluvia.
+export function getRiesgo(sensorCodigo = SENSOR_POR_DEFECTO, ubicacion = null) {
+  return apiFetch(`/api/riesgo${query({ sensor: sensorCodigo, lat: ubicacion?.lat, lon: ubicacion?.lon })}`);
+}
+
 // --- Mapa: albergues y zonas de riesgo -------------------------------------
 
 export function getAlbergues() {
@@ -103,6 +110,12 @@ export function actualizarOcupacionAlbergue(id, ocupacionActual) {
 
 export function eliminarAlbergue(id) {
   return enviar(`/api/albergues/${id}`, "DELETE");
+}
+
+// Dirección escrita -> [{ nombre, lat, lon }] dentro de Piura (OpenStreetMap
+// vía el backend).
+export function buscarDireccion(texto) {
+  return apiFetch(`/api/geocodificar${query({ q: texto })}`);
 }
 
 export function getZonasRiesgo() {
@@ -123,8 +136,15 @@ export function getReportes({
   );
 }
 
-export function crearReporte({ autor_nombre, descripcion, foto_url, lon, lat }) {
-  return enviar("/api/reportes-ciudadanos", "POST", { autor_nombre, descripcion, foto_url, lon, lat });
+export function crearReporte({ autor_nombre, descripcion, foto_url, lon, lat, categoria }) {
+  return enviar("/api/reportes-ciudadanos", "POST", {
+    autor_nombre,
+    descripcion,
+    foto_url,
+    lon,
+    lat,
+    categoria,
+  });
 }
 
 export function darLike(reporteId) {
@@ -194,6 +214,11 @@ export function getHistorialAlertas(limite = 30) {
   return apiFetch(`/api/alertas/historial${query({ limite })}`);
 }
 
+// Avisos preventivos por lluvia fuerte pronosticada (backend avisoLluvia.js).
+export function getAvisosLluvia(limite = 1) {
+  return apiFetch(`/api/alertas/avisos-lluvia${query({ limite })}`);
+}
+
 export function difundirAlertaManual(mensaje) {
   return enviar("/api/alertas/difundir", "POST", { mensaje });
 }
@@ -254,6 +279,58 @@ export function actualizarEstadoTicket(id, estado) {
 
 export function getImpacto() {
   return apiFetch("/api/impacto");
+}
+
+// --- Avisos anónimos de enfermedad en la zona ---
+
+export function enviarAvisoSalud({ enfermedad, personas, lon, lat }) {
+  return enviar("/api/salud/reportes", "POST", { enfermedad, personas, lon, lat });
+}
+
+export function getResumenSalud(dias = 14) {
+  return apiFetch(`/api/salud/reportes/resumen${query({ dias })}`);
+}
+
+// Conteo anónimo de uso de contenidos educativos (indicadores ODS 2.4 y 4.7):
+// una vez por sesión del navegador, así recargar la página no infla la cifra.
+// Nunca bloquea ni muestra errores: si falla, simplemente no se cuenta.
+export function registrarUso(recurso, accion) {
+  const clave = `piura-alerta-uso-${recurso}-${accion}`;
+  try {
+    if (sessionStorage.getItem(clave)) return;
+    sessionStorage.setItem(clave, "1");
+  } catch {
+    // sin sessionStorage: se cuenta igual
+  }
+  enviar("/api/uso", "POST", { recurso, accion }).catch(() => {});
+}
+
+export function getImpactoPublico() {
+  return apiFetch("/api/impacto/publico");
+}
+
+export function enviarAvisoAgua({ tipo, lon, lat }) {
+  return enviar("/api/agua/reportes", "POST", { tipo, lon, lat });
+}
+
+export function getResumenAgua(dias = 14) {
+  return apiFetch(`/api/agua/reportes/resumen${query({ dias })}`);
+}
+
+export function getIndicadoresODS() {
+  return apiFetch("/api/impacto/ods");
+}
+
+// --- Datos abiertos (públicos, sin sesión) ---
+
+export function getCatalogoDatosAbiertos() {
+  return apiFetch("/api/datos-abiertos");
+}
+
+// URL absoluta para descargar/compartir: se abre en una pestaña nueva (web)
+// o en el navegador del sistema (app Android), no con fetch.
+export function urlDatosAbiertos(recurso, params = {}) {
+  return `${API_URL}/api/datos-abiertos/${recurso}${query(params)}`;
 }
 
 export function getConfiguracion() {

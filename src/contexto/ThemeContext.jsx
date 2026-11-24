@@ -3,25 +3,29 @@ import { createContext, useContext, useEffect, useState } from "react";
 const ThemeContext = createContext(null);
 const CLAVE_TEMA = "piura-alerta-tema";
 
-// Sin preferencia guardada, sigue al sistema operativo. La clase "dark" en
-// <html> activa las variables de modo oscuro de index.css (y la variante
-// dark: de Tailwind, ver @custom-variant en index.css).
+// La app SIEMPRE abre en claro, sin importar el sistema operativo: el oscuro
+// es solo una opción manual de Ajustes y se respeta si la persona la eligió.
+// La clase "dark" en <html> activa las variables de modo oscuro de index.css
+// (y la variante dark: de Tailwind, ver @custom-variant en index.css).
 function temaInicial() {
   try {
-    const guardado = localStorage.getItem(CLAVE_TEMA);
-    if (guardado === "light" || guardado === "dark") return guardado;
+    if (localStorage.getItem(CLAVE_TEMA) === "dark") return "dark";
   } catch {
-    // localStorage bloqueado: se usa la preferencia del sistema
+    // localStorage bloqueado: claro, como siempre
   }
-  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  return "light";
+}
+
+function aplicarTema(tema) {
+  document.documentElement.classList.toggle("dark", tema === "dark");
+  document.documentElement.style.colorScheme = tema;
 }
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(temaInicial);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    document.documentElement.style.colorScheme = theme;
+    aplicarTema(theme);
     try {
       localStorage.setItem(CLAVE_TEMA, theme);
     } catch {
@@ -29,8 +33,31 @@ export function ThemeProvider({ children }) {
     }
   }, [theme]);
 
-  function toggleTheme() {
-    setTheme((actual) => (actual === "dark" ? "light" : "dark"));
+  // Con View Transitions, el tema nuevo se revela en un círculo que crece
+  // desde donde se tocó (evento opcional). Sin soporte o con "reducir
+  // movimiento", cambia de inmediato como siempre.
+  function toggleTheme(evento) {
+    const nuevo = theme === "dark" ? "light" : "dark";
+    const raiz = document.documentElement;
+    const reducir = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (!document.startViewTransition || reducir) {
+      setTheme(nuevo);
+      return;
+    }
+    const x = evento?.clientX || window.innerWidth / 2;
+    const y = evento?.clientY || window.innerHeight / 2;
+    const radio = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+    raiz.style.setProperty("--vt-x", `${x}px`);
+    raiz.style.setProperty("--vt-y", `${y}px`);
+    raiz.style.setProperty("--vt-r", `${radio}px`);
+    raiz.classList.add("pa-cambio-tema");
+    const transicion = document.startViewTransition(() => {
+      // La clase se aplica acá mismo (no en el efecto) para que la captura
+      // "después" de la transición ya tenga el tema nuevo.
+      aplicarTema(nuevo);
+      setTheme(nuevo);
+    });
+    transicion.finished.finally(() => raiz.classList.remove("pa-cambio-tema"));
   }
 
   return <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>{children}</ThemeContext.Provider>;

@@ -1,5 +1,5 @@
-import { useMemo } from "react";
-import { MapContainer, TileLayer, GeoJSON, Marker, Popup } from "react-leaflet";
+import { useEffect, useMemo } from "react";
+import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useZonasRiesgo } from "../ganchos/useZonasRiesgo";
@@ -36,7 +36,7 @@ function iconoConCache(clave, fabricar) {
 function crearIconoBootstrap(nombreIcono, color) {
   return iconoConCache(`bootstrap:${nombreIcono}:${color}`, () =>
     L.divIcon({
-      html: `<div style="background:${color};width:34px;height:34px;border-radius:9999px;display:flex;align-items:center;justify-content:center;color:white;line-height:1;box-shadow:0 2px 6px rgba(0,0,0,0.35);border:2.5px solid white;">${iconoHTML(nombreIcono)}</div>`,
+      html: `<div class="pa-marcador" style="--c:${color};background:${color};width:34px;height:34px;border-radius:9999px;display:flex;align-items:center;justify-content:center;color:white;line-height:1;box-shadow:0 4px 12px rgba(13,46,87,0.28);border:2.5px solid white;">${iconoHTML(nombreIcono)}</div>`,
       className: "",
       iconSize: [34, 34],
       iconAnchor: [17, 17],
@@ -78,6 +78,33 @@ function abrirRutaSegura(lat, lon) {
   );
 }
 
+// Toque en el mapa -> punto a analizar (ver paginas/Mapa.jsx). Solo se monta
+// cuando la página pasa onElegirPunto, así el mapa chico de otras páginas no
+// reacciona a los clics.
+function CapturarToque({ onElegir }) {
+  useMapEvents({
+    click(evento) {
+      onElegir({ lat: Number(evento.latlng.lat.toFixed(5)), lon: Number(evento.latlng.lng.toFixed(5)) });
+    },
+  });
+  return null;
+}
+
+// Si el punto elegido (por ejemplo, una dirección buscada) queda fuera de lo
+// que se ve, el mapa vuela hasta él. Un toque en el mapa ya está a la vista,
+// así que no lo mueve.
+function CentrarEnPunto({ punto }) {
+  const mapa = useMap();
+  const lat = punto?.lat;
+  const lon = punto?.lon;
+  useEffect(() => {
+    if (lat === undefined || lon === undefined) return;
+    if (mapa.getBounds().pad(-0.1).contains([lat, lon])) return;
+    mapa.flyTo([lat, lon], Math.max(mapa.getZoom(), 15), { duration: 0.8 });
+  }, [mapa, lat, lon]);
+  return null;
+}
+
 function zonasAFeatureCollection(zonas) {
   return {
     type: "FeatureCollection",
@@ -89,7 +116,7 @@ function zonasAFeatureCollection(zonas) {
   };
 }
 
-function RiesgoMap({ altura = "520px", mostrarLeyenda = true }) {
+function RiesgoMap({ altura = "520px", mostrarLeyenda = true, puntoAnalizado = null, onElegirPunto }) {
   const { theme } = useTheme();
   const { data: zonas, loading: cargandoZonas, error: errorZonas } = useZonasRiesgo();
   const { data: albergues, loading: cargandoAlbergues, error: errorAlbergues } = useAlbergues();
@@ -179,7 +206,10 @@ function RiesgoMap({ altura = "520px", mostrarLeyenda = true }) {
         </div>
       )}
 
-      <div className="rounded-2xl border overflow-hidden" style={{ borderColor: "var(--color-border)" }}>
+      <div
+        className="rounded-[28px] border overflow-hidden"
+        style={{ borderColor: "var(--color-glass-border)", boxShadow: "var(--shadow-glass)" }}
+      >
         {cargando ? (
           <Skeleton className="w-full rounded-none" style={{ height: altura }} />
         ) : (
@@ -194,6 +224,16 @@ function RiesgoMap({ altura = "520px", mostrarLeyenda = true }) {
             className={theme === "dark" && !CARTO_API_KEY ? "mapa-invertido" : undefined}
           >
             <TileLayer key={theme} attribution={atribucionMapa} url={urlTiles} />
+
+            {onElegirPunto && <CapturarToque onElegir={onElegirPunto} />}
+            {onElegirPunto && <CentrarEnPunto punto={puntoAnalizado} />}
+            {puntoAnalizado && (
+              <Marker
+                position={[puntoAnalizado.lat, puntoAnalizado.lon]}
+                icon={crearIconoTexto("Tú", "#0e2d47")}
+                zIndexOffset={1000}
+              />
+            )}
 
             {featureCollection.features.length > 0 && (
               <GeoJSON

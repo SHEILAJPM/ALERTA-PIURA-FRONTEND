@@ -28,15 +28,15 @@ function Reportes() {
   const cercania = useOrdenPorCercania(reportes);
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <section className="mb-6">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 lg:pt-10 pb-8">
+      <section className="pa-entra mb-8">
         <p
-          className="font-semibold text-sm uppercase tracking-wide"
+          className="text-[11px] font-extrabold uppercase tracking-[0.14em]"
           style={{ color: "var(--color-primary)" }}
         >
           Portal ciudadano
         </p>
-        <h2 className="text-3xl md:text-4xl font-bold mt-2">Reportes y mapa de riesgo en vivo</h2>
+        <h1 className="text-[34px] md:text-[40px] leading-[1.08] mt-1">Reportes en vivo</h1>
         <p className="mt-3 max-w-2xl" style={{ color: "var(--color-text-muted)" }}>
           Comparte lo que ves en tu zona, revisa lo que reporta la comunidad y ubica el albergue y la ruta más
           seguros. No necesitas cuenta para reportar.
@@ -156,7 +156,7 @@ function Reportes() {
         </div>
 
         {/* Rail lateral: publicar + herramientas — se queda fijo al hacer scroll, como los widgets de Instagram */}
-        <aside className="space-y-4 lg:sticky lg:top-24">
+        <aside className="space-y-4 lg:sticky lg:top-8 order-first lg:order-none w-full max-w-[470px] mx-auto lg:max-w-none">
           {pendientes > 0 && (
             <p
               className="text-sm rounded-xl px-3 py-2 flex items-center gap-2"

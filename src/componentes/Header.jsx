@@ -1,15 +1,44 @@
-import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
-import ThemeToggle from "./ThemeToggle";
+import { useEffect, useRef, useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import {
+  Backpack,
+  ChartColumn,
+  ChevronRight,
+  ClipboardList,
+  Droplets,
+  GraduationCap,
+  FlaskConical,
+  HandHeart,
+  HeartPulse,
+  CirclePlus,
+  History,
+  House,
+  LayoutDashboard,
+  LogIn,
+  LogOut,
+  Map as MapIcon,
+  Megaphone,
+  Menu,
+  ShieldCheck,
+  Smartphone,
+  Sprout,
+  Sparkles,
+  UserRound,
+  X,
+} from "lucide-react";
+import ThemeToggle, { InterruptorModoOscuro } from "./ThemeToggle";
 import NotificacionesToggle from "./NotificacionesToggle";
+import BotonEmergencia from "./BotonEmergencia";
+import { abrirTourOnboarding } from "./OnboardingTour";
 import { useWebSocketStatus } from "../contexto/WebSocketContext";
 import { useAuth } from "../contexto/AuthContext";
+import { useModalA11y } from "../ganchos/useModalA11y";
 import { ROLES_PANEL_ADMIN } from "../constantes/roles";
 import Avatar from "./Avatar";
 
 // Aislado en su propio componente a propósito: el estado que cambia cada
-// segundo vive acá, no en Header, así el tic-tac del reloj no re-renderiza
-// todo el header (nav, menú, toggles) una vez por segundo.
+// segundo vive acá, no en la navegación, así el tic-tac del reloj no
+// re-renderiza todo el menú una vez por segundo.
 function RelojEnVivo() {
   const [hora, setHora] = useState(() => new Date());
 
@@ -19,230 +48,527 @@ function RelojEnVivo() {
   }, []);
 
   return (
-    <span
-      className="hidden 2xl:inline font-mono-data text-sm tabular-nums whitespace-nowrap"
-      style={{ color: "var(--color-dorado)" }}
-    >
+    <span className="font-mono-data text-sm font-bold tabular-nums" style={{ color: "var(--color-title)" }}>
       {hora.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
     </span>
   );
 }
 
 const LINKS_BASE = [
-  { to: "/", label: "Inicio" },
-  { to: "/mapa", label: "Mapa" },
-  { to: "/reportes", label: "Reportes" },
-  { to: "/historial", label: "Historial" },
-  { to: "/seguro", label: "Seguro" },
-  { to: "/app", label: "Descargar app" },
+  { to: "/", label: "Inicio", icono: House },
+  { to: "/mapa", label: "Mapa", icono: MapIcon },
+  { to: "/reportes", label: "Reportes", icono: Megaphone },
+  { to: "/mochila", label: "Mi mochila", icono: Backpack },
+  { to: "/plan", label: "Mi plan familiar", icono: ClipboardList },
+  { to: "/quiz", label: "¿Estás preparado?", icono: GraduationCap },
+  { to: "/salud", label: "Salud", icono: HeartPulse },
+  { to: "/agua", label: "Agua segura", icono: Droplets },
+  { to: "/ayuda", label: "Ayuda tras el fenómeno", icono: HandHeart },
+  { to: "/agricultura", label: "Agricultores", icono: Sprout },
+  { to: "/historial", label: "Historial", icono: History },
+  { to: "/seguro", label: "Seguro", icono: ShieldCheck },
+  { to: "/laboratorio", label: "Laboratorio", icono: FlaskConical },
+  { to: "/impacto", label: "Nuestro impacto", icono: ChartColumn },
+  { to: "/app", label: "Descargar app", icono: Smartphone },
 ];
 
+const LINK_ADMIN = { to: "/admin", label: "Panel admin", icono: LayoutDashboard };
+
 const ESTADOS_CONEXION = {
-  open: { color: "bg-emerald-400", texto: "En vivo" },
-  connecting: { color: "bg-amber-400 animate-pulse", texto: "Conectando" },
-  closed: { color: "bg-red-400", texto: "Sin conexión" },
+  open: { color: "var(--color-normal)", texto: "En vivo", vivo: true },
+  connecting: { color: "var(--color-prealerta-punto)", texto: "Conectando", vivo: true },
+  closed: { color: "var(--color-alerta)", texto: "Sin conexión", vivo: false },
 };
 
-function navClass({ isActive }) {
-  return `whitespace-nowrap transition font-medium ${isActive ? "text-white" : "text-white/70 hover:text-white"}`;
+function useLinks() {
+  const { usuario } = useAuth();
+  return usuario && ROLES_PANEL_ADMIN.includes(usuario.rol) ? [...LINKS_BASE, LINK_ADMIN] : LINKS_BASE;
 }
 
-function navClassMobile({ isActive }) {
-  return `block py-2 transition font-medium ${isActive ? "text-white" : "text-white/70 hover:text-white"}`;
+function useConexion() {
+  const wsStatus = useWebSocketStatus();
+  return ESTADOS_CONEXION[wsStatus] ?? ESTADOS_CONEXION.closed;
 }
 
-// El link a /admin lleva a una zona distinta (panel operativo, no público):
-// se marca con una insignia dorada en vez del estilo de nav plano, para que
-// se note que no es "una pestaña más".
-function navClassAdmin({ isActive }) {
-  return `whitespace-nowrap text-xs font-bold uppercase tracking-wide px-2.5 py-1 rounded-full transition ${
-    isActive ? "text-white" : "text-white/85 hover:text-white"
-  }`;
-}
-
-const estiloAdminBadge = { backgroundColor: "color-mix(in srgb, var(--color-dorado) 35%, transparent)" };
-
-function IconoMenu({ abierto }) {
+function Marca({ conexion }) {
   return (
-    <svg
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    >
-      {abierto ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-    </svg>
+    <div className="flex items-center gap-3 min-w-0">
+      <img
+        src="/images/escudo-piura.png"
+        alt=""
+        width={36}
+        height={42}
+        className="w-9 h-[42px] shrink-0 object-contain"
+      />
+      <div className="min-w-0">
+        <p className="font-display text-[17px] leading-tight whitespace-nowrap">Piura Alerta</p>
+        <p
+          className="flex items-center gap-1.5 text-xs font-semibold"
+          style={{ color: "var(--color-text-muted)" }}
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${conexion.vivo ? "pa-vivo" : ""}`}
+            style={{ backgroundColor: conexion.color, color: conexion.color }}
+          />
+          {conexion.texto}
+        </p>
+      </div>
+    </div>
   );
 }
 
-function Header() {
-  const wsStatus = useWebSocketStatus();
-  const conexion = ESTADOS_CONEXION[wsStatus] ?? ESTADOS_CONEXION.closed;
+/* ------------------------------------------------------------------ */
+/* Escritorio (>= 1024 px): barra lateral blanca                       */
+/* ------------------------------------------------------------------ */
+export function BarraLateral() {
+  const links = useLinks();
+  const conexion = useConexion();
   const { usuario, logout, abrirModal } = useAuth();
-  const [menuAbierto, setMenuAbierto] = useState(false);
-  const links =
-    usuario && ROLES_PANEL_ADMIN.includes(usuario.rol)
-      ? [...LINKS_BASE, { to: "/admin", label: "Admin" }]
-      : LINKS_BASE;
 
-  function cerrarMenu() {
-    setMenuAbierto(false);
+  return (
+    <aside
+      className="vidrio-fuerte hidden lg:flex fixed inset-y-0 left-0 z-30 flex-col gap-6 px-5 py-6 overflow-y-auto"
+      style={{ width: "var(--ancho-sidebar)", borderRadius: 0, borderWidth: "0 1px 0 0" }}
+      aria-label="Navegación principal"
+    >
+      <div className="flex flex-col gap-4 px-1">
+        <Marca conexion={conexion} />
+        <div className="orla w-24" aria-hidden="true" />
+      </div>
+
+      <nav className="flex flex-col gap-1">
+        {links.map(({ to, label, icono: Icono }, i) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={to === "/"}
+            className={({ isActive }) =>
+              `pa-entra group flex items-center gap-3 min-h-[44px] px-3.5 rounded-2xl text-[15px] font-semibold transition-[background-color,color,box-shadow,padding] duration-200 ${
+                isActive ? "" : "hover:bg-[var(--color-primary-soft)] hover:pl-4.5"
+              }`
+            }
+            style={({ isActive }) => ({
+              "--i": i,
+              ...(isActive
+                ? {
+                    backgroundColor: "var(--color-activo)",
+                    color: "#ffffff",
+                    boxShadow: "0 8px 20px rgba(13,46,87,0.22)",
+                  }
+                : { color: to === "/admin" ? "var(--color-dorado)" : "var(--color-text-muted)" }),
+            })}
+          >
+            <Icono
+              size={19}
+              strokeWidth={1.75}
+              aria-hidden="true"
+              className="transition-transform duration-200 group-hover:scale-110"
+            />
+            {label}
+          </NavLink>
+        ))}
+      </nav>
+
+      <BotonEmergencia variante="lateral" />
+
+      <div className="mt-auto flex flex-col gap-3">
+        <div
+          className="flex items-center justify-between rounded-2xl px-3.5 py-2.5"
+          style={{ backgroundColor: "var(--color-surface-alt)" }}
+        >
+          <span className="text-xs font-semibold" style={{ color: "var(--color-text-muted)" }}>
+            Hora en Piura
+          </span>
+          <RelojEnVivo />
+        </div>
+
+        <div className="flex items-center justify-between px-1">
+          <span className="text-sm font-semibold" style={{ color: "var(--color-text-muted)" }}>
+            Ajustes rápidos
+          </span>
+          <div className="flex items-center">
+            <NotificacionesToggle tono="claro" />
+            <ThemeToggle tono="claro" />
+          </div>
+        </div>
+
+        {usuario ? (
+          <div
+            className="flex items-center gap-3 rounded-2xl p-2.5 pr-2"
+            style={{ backgroundColor: "var(--color-surface-alt)" }}
+          >
+            <NavLink to="/perfil" className="flex items-center gap-3 min-w-0 flex-1" title="Mi perfil">
+              <Avatar nombre={usuario.nombre} size={36} />
+              <span className="min-w-0">
+                <span className="block text-sm font-bold truncate" style={{ color: "var(--color-title)" }}>
+                  {usuario.nombre}
+                </span>
+                <span className="block text-xs" style={{ color: "var(--color-text-muted)" }}>
+                  Mi perfil
+                </span>
+              </span>
+            </NavLink>
+            <button
+              type="button"
+              onClick={logout}
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+              className="w-11 h-11 rounded-full flex items-center justify-center transition hover:bg-[var(--color-primary-soft)]"
+              style={{ color: "var(--color-text-muted)" }}
+            >
+              <LogOut size={18} strokeWidth={1.75} aria-hidden="true" />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => abrirModal("login")}
+            className="btn-dorado pa-tocable min-h-[48px] rounded-full font-extrabold flex items-center justify-center gap-2"
+          >
+            <LogIn size={18} strokeWidth={2} aria-hidden="true" />
+            Iniciar sesión
+          </button>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Móvil: hoja "Más" con el resto de secciones y los ajustes           */
+/* ------------------------------------------------------------------ */
+function FilaHoja({ icono: Icono, children, onClick, to, color }) {
+  const contenido = (
+    <>
+      <span
+        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+        style={{ backgroundColor: "var(--color-primary-soft)", color: color ?? "var(--color-primary)" }}
+      >
+        <Icono size={18} strokeWidth={1.75} aria-hidden="true" />
+      </span>
+      <span className="flex-1 text-[15px] font-semibold" style={{ color: color ?? "var(--color-text)" }}>
+        {children}
+      </span>
+      <ChevronRight size={18} aria-hidden="true" style={{ color: "var(--color-text-muted)" }} />
+    </>
+  );
+  const clase = "flex items-center gap-3 w-full min-h-[52px] px-4 text-left";
+  return to ? (
+    <NavLink to={to} end={to === "/"} onClick={onClick} className={clase}>
+      {contenido}
+    </NavLink>
+  ) : (
+    <button type="button" onClick={onClick} className={clase}>
+      {contenido}
+    </button>
+  );
+}
+
+function Grupo({ titulo, children }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <p
+        className="px-4 text-[11px] font-extrabold tracking-[0.12em] uppercase"
+        style={{ color: "var(--color-text-muted)" }}
+      >
+        {titulo}
+      </p>
+      <div
+        className="rounded-[22px] overflow-hidden divide-y divide-[var(--color-border)]"
+        style={{ backgroundColor: "var(--color-surface)", borderColor: "var(--color-border)" }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function HojaMas({ onCerrar }) {
+  const contenedorRef = useModalA11y(onCerrar);
+  const links = useLinks();
+  const { usuario, logout, abrirModal } = useAuth();
+  const secundarios = links.filter((l) => !["/", "/mapa", "/reportes"].includes(l.to));
+
+  // Arrastrar la manija hacia abajo cierra la hoja (como en iOS/Android).
+  // El transform va en un envoltorio aparte: la animación de entrada
+  // (sr-hoja) fija su propio transform en la hoja y pisaría el del arrastre.
+  const arrastreRef = useRef(null);
+  const inicioY = useRef(null);
+
+  function alPresionar(e) {
+    inicioY.current = e.clientY;
+    arrastreRef.current.dataset.arrastrando = "";
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  }
+  function alMover(e) {
+    if (inicioY.current === null) return;
+    const dy = Math.max(0, e.clientY - inicioY.current);
+    arrastreRef.current.style.transform = `translateY(${dy}px)`;
+  }
+  function alSoltar(e) {
+    if (inicioY.current === null) return;
+    const dy = e.clientY - inicioY.current;
+    inicioY.current = null;
+    const hoja = arrastreRef.current;
+    delete hoja.dataset.arrastrando;
+    if (dy > 110) {
+      hoja.style.transform = "translateY(100%)";
+      setTimeout(onCerrar, 220);
+    } else {
+      hoja.style.transform = "";
+    }
   }
 
   return (
-    <header
-      className="shadow-md sticky top-0 z-20 border-b-2"
-      style={{ backgroundColor: "var(--color-brand-chrome)", borderColor: "var(--color-dorado)" }}
+    <div
+      className="sr-velo fixed inset-0 z-50 flex items-end"
+      style={{ backgroundColor: "rgba(10,22,36,0.4)", backdropFilter: "blur(6px)" }}
+      onClick={onCerrar}
     >
-      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-6 h-20">
-          <div className="flex items-center gap-3 min-w-0">
-            <img src="/images/logo.svg" alt="" width={44} height={44} className="w-11 h-11 shrink-0" />
-
-            <div className="min-w-0">
-              <h1 className="text-lg font-bold text-white leading-tight whitespace-nowrap">
-                Río Piura Alerta
-              </h1>
-              <div className="flex items-center gap-1.5 text-xs text-white/70">
-                <span className={`w-1.5 h-1.5 rounded-full ${conexion.color}`} />
-                {conexion.texto}
-              </div>
-            </div>
-          </div>
-
-          {/* Recién desde xl entran todos los enlaces + sesión en una sola
-              línea; por debajo, el menú hamburguesa. */}
-          <div className="hidden xl:flex items-center">
-            <nav className="flex items-center gap-5 text-[15px]">
-              {links.map((link) =>
-                link.to === "/admin" ? (
-                  <NavLink key={link.to} to={link.to} className={navClassAdmin} style={estiloAdminBadge}>
-                    {link.label}
-                  </NavLink>
-                ) : (
-                  <NavLink key={link.to} to={link.to} end={link.to === "/"} className={navClass}>
-                    {link.label}
-                  </NavLink>
-                )
-              )}
-            </nav>
-
-            <div className="flex items-center gap-4 ml-5 pl-5 border-l border-white/15">
-              <RelojEnVivo />
-
-              {usuario ? (
-                <div className="flex items-center gap-3 text-sm text-white/90">
-                  <NavLink
-                    to="/perfil"
-                    title={`${usuario.nombre} · Mi perfil`}
-                    aria-label={`${usuario.nombre} · Mi perfil`}
-                    className="rounded-full ring-2 ring-white/40 hover:ring-white transition"
-                  >
-                    <Avatar nombre={usuario.nombre} size={34} />
-                  </NavLink>
-                  <button
-                    type="button"
-                    onClick={logout}
-                    className="whitespace-nowrap font-medium text-white/70 hover:text-white transition"
-                  >
-                    Cerrar sesión
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => abrirModal("login")}
-                  className="whitespace-nowrap font-medium text-white/70 hover:text-white transition"
-                >
-                  Iniciar sesión
-                </button>
-              )}
-
-              <NotificacionesToggle />
-              <ThemeToggle />
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setMenuAbierto((v) => !v)}
-            className="xl:hidden shrink-0 text-white p-2 -mr-2"
-            aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
-            aria-expanded={menuAbierto}
+      <div ref={arrastreRef} className="pa-hoja-arrastrable w-full">
+        <div
+          ref={contenedorRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Más opciones"
+          tabIndex={-1}
+          className="sr-hoja w-full max-h-[88vh] overflow-y-auto rounded-t-[28px] px-4 outline-none"
+          style={{
+            backgroundColor: "var(--color-bg)",
+            paddingBottom: "calc(24px + env(safe-area-inset-bottom, 0px))",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div
+            className="flex justify-center pt-3 pb-3 -mx-4 cursor-grab touch-none"
+            onPointerDown={alPresionar}
+            onPointerMove={alMover}
+            onPointerUp={alSoltar}
+            onPointerCancel={alSoltar}
+            aria-hidden="true"
           >
-            <IconoMenu abierto={menuAbierto} />
-          </button>
-        </div>
+            <div className="h-1.5 w-10 rounded-full" style={{ backgroundColor: "var(--color-border)" }} />
+          </div>
+          <div className="flex items-center justify-between mb-5 px-1">
+            <h2 className="text-2xl">Más</h2>
+            <button
+              type="button"
+              onClick={onCerrar}
+              aria-label="Cerrar"
+              className="w-11 h-11 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: "var(--color-surface)", color: "var(--color-title)" }}
+            >
+              <X size={20} aria-hidden="true" />
+            </button>
+          </div>
 
-        {menuAbierto && (
-          <div className="xl:hidden pb-4 border-t border-white/10 pt-3">
-            <nav className="flex flex-col">
-              {links.map((link) =>
-                link.to === "/admin" ? (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    className="block py-2 transition font-bold"
-                    style={{ color: "var(--color-dorado)" }}
-                    onClick={cerrarMenu}
-                  >
-                    {link.label} · modo operativo
-                  </NavLink>
-                ) : (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    end={link.to === "/"}
-                    className={navClassMobile}
-                    onClick={cerrarMenu}
-                  >
-                    {link.label}
-                  </NavLink>
-                )
-              )}
-            </nav>
+          <div className="flex flex-col gap-6">
+            <Grupo titulo="Explorar">
+              {secundarios.map((l) => (
+                <FilaHoja
+                  key={l.to}
+                  to={l.to}
+                  icono={l.icono}
+                  onClick={onCerrar}
+                  color={l.to === "/admin" ? "var(--color-dorado)" : undefined}
+                >
+                  {l.label}
+                </FilaHoja>
+              ))}
+            </Grupo>
 
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/10">
+            <Grupo titulo="Ajustes">
+              <InterruptorModoOscuro />
+              <FilaHoja
+                icono={Sparkles}
+                onClick={() => {
+                  onCerrar();
+                  abrirTourOnboarding();
+                }}
+              >
+                ¿Cómo funciona esta app?
+              </FilaHoja>
+            </Grupo>
+
+            <Grupo titulo="Cuenta">
               {usuario ? (
-                <div className="flex items-center gap-3 text-sm text-white/90">
-                  <NavLink to="/perfil" onClick={cerrarMenu} className="hover:underline">
+                <>
+                  <FilaHoja to="/perfil" icono={UserRound} onClick={onCerrar}>
                     {usuario.nombre}
-                  </NavLink>
-                  <button
-                    type="button"
+                  </FilaHoja>
+                  <FilaHoja
+                    icono={LogOut}
+                    color="var(--color-alerta)"
                     onClick={() => {
                       logout();
-                      cerrarMenu();
+                      onCerrar();
                     }}
-                    className="font-medium text-white/70 hover:text-white transition"
                   >
                     Cerrar sesión
-                  </button>
-                </div>
+                  </FilaHoja>
+                </>
               ) : (
-                <button
-                  type="button"
+                <FilaHoja
+                  icono={LogIn}
                   onClick={() => {
+                    onCerrar();
                     abrirModal("login");
-                    cerrarMenu();
                   }}
-                  className="font-medium text-white/70 hover:text-white transition"
                 >
                   Iniciar sesión
-                </button>
+                </FilaHoja>
               )}
-              <div className="flex items-center gap-2">
-                <NotificacionesToggle />
-                <ThemeToggle />
-              </div>
-            </div>
+            </Grupo>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Móvil: barra superior de vidrio                                     */
+/* ------------------------------------------------------------------ */
+function Header() {
+  const conexion = useConexion();
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const barraRef = useRef(null);
+
+  // Al bajar, la barra se compacta y gana opacidad. Se marca directo en el
+  // DOM (sin estado) para no re-renderizar el header en cada evento de scroll.
+  useEffect(() => {
+    function alHacerScroll() {
+      const barra = barraRef.current;
+      if (!barra) return;
+      if (window.scrollY > 12) barra.dataset.compacta = "";
+      else delete barra.dataset.compacta;
+    }
+    alHacerScroll();
+    window.addEventListener("scroll", alHacerScroll, { passive: true });
+    return () => window.removeEventListener("scroll", alHacerScroll);
+  }, []);
+
+  return (
+    <>
+      <header
+        ref={barraRef}
+        className="vidrio pa-barra-superior lg:hidden sticky z-30 mx-3 mt-2 rounded-[22px]"
+        style={{ top: "calc(8px + env(safe-area-inset-top, 0px))" }}
+      >
+        <div className="flex items-center justify-between gap-3 h-16 pl-3 pr-1.5">
+          <Marca conexion={conexion} />
+          <div className="flex items-center">
+            <NotificacionesToggle tono="claro" />
+            <button
+              type="button"
+              onClick={() => setMenuAbierto(true)}
+              className="w-11 h-11 rounded-full flex items-center justify-center"
+              style={{ color: "var(--color-title)" }}
+              aria-label="Abrir menú"
+              aria-expanded={menuAbierto}
+            >
+              <Menu size={22} strokeWidth={1.75} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      </header>
+      {menuAbierto && <HojaMas onCerrar={() => setMenuAbierto(false)} />}
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Móvil: barra inferior flotante en píldora, con SOS al centro        */
+/* ------------------------------------------------------------------ */
+function Pestana({ to, icono: Icono, children }) {
+  return (
+    <NavLink
+      to={to}
+      end={to === "/"}
+      className="relative flex flex-col items-center justify-center gap-0.5 min-h-[52px] text-[10.5px] font-bold transition-colors duration-200"
+      style={({ isActive }) => ({ color: isActive ? "var(--color-primary)" : "var(--color-text-muted)" })}
+    >
+      {({ isActive }) => (
+        <>
+          {/* key: al activarse se vuelve a montar y el ícono "salta". */}
+          <span
+            key={isActive ? "activa" : "inactiva"}
+            className={isActive ? "pa-salto inline-flex" : "inline-flex"}
+          >
+            <Icono size={22} strokeWidth={isActive ? 2.2 : 1.75} aria-hidden="true" />
+          </span>
+          {children}
+        </>
+      )}
+    </NavLink>
+  );
+}
+
+// Columna de la pestaña activa en la grilla de 5 (la 2 es el SOS).
+function columnaActiva(pathname) {
+  if (pathname === "/") return 0;
+  if (pathname.startsWith("/mapa")) return 1;
+  if (pathname.startsWith("/reportes")) return 3;
+  if (pathname.startsWith("/perfil")) return 4;
+  return null;
+}
+
+export function BarraInferior() {
+  const { usuario, abrirModal } = useAuth();
+  const { pathname } = useLocation();
+  const enPerfil = pathname.startsWith("/perfil");
+  const columna = columnaActiva(pathname);
+
+  return (
+    <nav
+      aria-label="Navegación principal"
+      className="lg:hidden fixed z-40 left-3 right-3"
+      style={{ bottom: "calc(14px + env(safe-area-inset-bottom, 0px))" }}
+    >
+      <div
+        className="vidrio-fuerte relative grid grid-cols-5 items-center rounded-full px-2"
+        style={{ height: "var(--alto-tabbar)" }}
+      >
+        {/* Fondo de la pestaña activa: se desliza de una a otra. */}
+        <div className="absolute inset-y-2 left-2 right-2 pointer-events-none" aria-hidden="true">
+          <div
+            className="pa-indicador h-full w-1/5 rounded-full"
+            style={{
+              backgroundColor: "var(--color-primary-soft)",
+              transform: `translateX(${(columna ?? 0) * 100}%)`,
+              opacity: columna === null ? 0 : 1,
+            }}
+          />
+        </div>
+        <Pestana to="/" icono={House}>
+          Inicio
+        </Pestana>
+        <Pestana to="/mapa" icono={MapIcon}>
+          Mapa
+        </Pestana>
+        <div className="relative flex justify-center">
+          <BotonEmergencia variante="barra" />
+        </div>
+        <Pestana to="/reportes" icono={CirclePlus}>
+          Reportar
+        </Pestana>
+        {usuario ? (
+          <Pestana to="/perfil" icono={UserRound}>
+            Perfil
+          </Pestana>
+        ) : (
+          <button
+            type="button"
+            onClick={() => abrirModal("login")}
+            className="relative flex flex-col items-center justify-center gap-0.5 min-h-[52px] text-[10.5px] font-bold"
+            style={{ color: enPerfil ? "var(--color-primary)" : "var(--color-text-muted)" }}
+          >
+            <UserRound size={22} strokeWidth={1.75} aria-hidden="true" />
+            Entrar
+          </button>
         )}
       </div>
-    </header>
+    </nav>
   );
 }
 

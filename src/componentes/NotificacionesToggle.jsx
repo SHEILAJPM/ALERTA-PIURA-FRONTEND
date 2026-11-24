@@ -34,7 +34,7 @@ const soportado =
 // ante cambios de estado del río. Se oculta sola si el navegador no las
 // soporta, si el backend no tiene claves VAPID configuradas o si no hay
 // service worker (en `npm run dev` no se registra; sí en build/preview).
-function NotificacionesToggle() {
+function NotificacionesToggle({ tono = "oscuro" }) {
   // cargando | oculto | inactivo | activo | bloqueado
   const [estado, setEstado] = useState(soportado ? "cargando" : "oculto");
   const [clave, setClave] = useState(null);
@@ -131,10 +131,20 @@ function NotificacionesToggle() {
       aria-label={etiqueta}
       aria-pressed={activo}
       title={estado === "bloqueado" ? "Notificaciones bloqueadas en el navegador" : etiqueta}
-      className={`w-9 h-9 rounded-full flex items-center justify-center transition disabled:opacity-50 hover:bg-white/10 ${
-        activo ? "text-white" : "text-white/70 hover:text-white"
-      }`}
-      style={activo ? { color: "var(--color-dorado)" } : undefined}
+      className={
+        tono === "claro"
+          ? "w-11 h-11 rounded-full flex items-center justify-center text-lg transition disabled:opacity-50 hover:bg-[var(--color-primary-soft)]"
+          : `w-9 h-9 rounded-full flex items-center justify-center transition disabled:opacity-50 hover:bg-white/10 ${
+              activo ? "text-white" : "text-white/70 hover:text-white"
+            }`
+      }
+      style={
+        tono === "claro"
+          ? { color: activo ? "var(--color-primary)" : "var(--color-title)" }
+          : activo
+            ? { color: "var(--color-dorado)" }
+            : undefined
+      }
     >
       <Icon name={activo ? "bi-bell-fill" : "bi-bell"} aria-hidden="true" />
     </button>

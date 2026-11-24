@@ -46,6 +46,8 @@ const GRUPOS = [
       { to: "/admin/reportes", label: "Moderación de Publicaciones", icon: "bi-clipboard-check" },
       { to: "/admin/chequeos-seguridad", label: "Chequeos de Seguridad", icon: "bi-person-badge" },
       { to: "/admin/impacto", label: "Panel de Impacto", icon: "bi-graph-up-arrow" },
+      { to: "/admin/ods", label: "Indicadores ODS / Sendai", icon: "bi-clipboard-check" },
+      { to: "/admin/vigilancia-salud", label: "Vigilancia de Salud", icon: "bi-activity" },
     ],
   },
 ];
@@ -166,7 +168,13 @@ function AdminLayout() {
           <Icon name="bi-x-lg" aria-hidden="true" />
         </button>
         <div className="flex items-center gap-3 px-2 py-3">
-          <img src="/images/logo.svg" alt="" width={40} height={40} className="w-10 h-10 shrink-0" />
+          <img
+            src="/images/escudo-piura.png"
+            alt=""
+            width={36}
+            height={42}
+            className="w-9 h-[42px] shrink-0 object-contain"
+          />
           <div className="min-w-0">
             <p className="text-white font-bold leading-tight truncate">Río Piura Alerta</p>
             <span

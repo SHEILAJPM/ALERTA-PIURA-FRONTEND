@@ -44,4 +44,6 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- Notificaciones de alertas (Android 13+); también lo declara @capacitor/local-notifications. -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Vibración corta al tocar el botón SOS (navigator.vibrate en el WebView). -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 </manifest>
